@@ -31,6 +31,14 @@ const SuratTugasPerjadin = db.define(
       primaryKey: true,
       allowNull: true,
     },
+    keperluan: {
+      type: DataTypes.STRING(225),
+      allowNull: true,
+    },
+    path_dokumen: {
+      type: DataTypes.STRING(225),
+      allowNull: true,
+    },
     kode_periode: {
       type: DataTypes.INTEGER(11),
       primaryKey: true,
@@ -81,6 +89,15 @@ const SuratTugasPerjadin = db.define(
     kode_status: {
       type: DataTypes.INTEGER(2),
       allowNull: true,
+    },
+    nomor_spm: {
+      type: DataTypes.STRING(225),
+      allowNull: true,
+    },
+    data_pengusulan: {
+      type: DataTypes.ENUM('TRANSAKSI-HISTORIS','TRANSAKSI-BARU'),
+      allowNull: true,
+      defaultValue:'TRANSAKSI-BARU'
     },
     ucr: {
       type: DataTypes.STRING(100),

@@ -50,7 +50,7 @@ exports.authenticate = (req,res,next) => {
         console.log("data_usman:",respons.data)
            console.log("Respons Usman", respons.data.status)
            if(!respons) {
-               const error = new Error("Data Tidak Ada")
+               let error = new Error("Data Tidak Ada")
                error.statusCode = 422; 
                throw error
            }
@@ -61,10 +61,14 @@ exports.authenticate = (req,res,next) => {
                message : respons.data.error[0].msg
                })
            }
-           if(respons.data.status === "success"){
+           else if(respons.data.status === "success"){
             return next()
            }
-           
+           else{
+            let error = new Error("Status Tidak Ada")
+            error.statusCode = 422; 
+            throw error         
+           }
        })
        .catch((err) => {
            if(!err.statusCode) {

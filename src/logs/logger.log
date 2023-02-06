@@ -1,0 +1,36 @@
+[2023-02-07T00:01:09.871] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:02:02.023] [DEBUG] default - error is not a constructor
+[2023-02-07T00:02:15.735] [DEBUG] default - Unknown column 'kode_kota_asal' in 'field list'
+[2023-02-07T00:04:03.534] [DEBUG] default - Unknown column 'kode_kota_asal' in 'field list'
+[2023-02-07T00:04:08.605] [DEBUG] default - error is not a constructor
+[2023-02-07T00:06:08.195] [DEBUG] default - error is not a constructor
+[2023-02-07T00:06:10.434] [DEBUG] default - error is not a constructor
+[2023-02-07T00:06:11.049] [DEBUG] default - error is not a constructor
+[2023-02-07T00:06:11.552] [DEBUG] default - error is not a constructor
+[2023-02-07T00:06:12.263] [DEBUG] default - error is not a constructor
+[2023-02-07T00:07:43.296] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:07:45.306] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:07:46.213] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:07:46.979] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:08:37.842] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:09:07.479] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:11:37.065] [DEBUG] default - TypeError: error is not a constructor
+    at C:\kerjaan\backup-10122022\expenditure20230130\src\controllers\spj_perjadin.js:272:19
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2023-02-07T00:23:20.688] [DEBUG] default - sppd is not defined
+[2023-02-07T00:24:27.938] [DEBUG] default - Unknown column 'trxSPPD.id_surat_tugas' in 'where clause'
+[2023-02-07T01:53:15.875] [DEBUG] default - Validation error

@@ -45,8 +45,43 @@ const store = async(req,res,next)=>{
 }
 
 const showunik = async(body,data)=>{
-    let response = await refSBMHonorarium.findOne({where:{kode_klasifikasi:body.kode_klasifikasi,katagori:data.katagori,tugas:data.tugas,jenjang:data.jenjang,eselon:data.eselon,jabatan:data.jabatan,}})
+    let cek = await refSBMHonorarium.findAll({where:{kode_klasifikasi:body.kode_klasifikasi},group:'gol'})
+    console.log(cek.length);
+    let response
+    if(cek.length > 1){
+        response = await refSBMHonorarium.findOne({
+          where: {
+            kode_klasifikasi: body.kode_klasifikasi,
+            katagori: data.katagori,
+            tugas: data.tugas,
+            jenjang: data.jenjang,
+            eselon: data.eselon,
+            gol: data.gol,
+            jabatan: data.jabatan,
+            aktif:"Y"
+          },
+        });
+    }else{
+response = await refSBMHonorarium.findOne({
+  where: {
+    kode_klasifikasi: body.kode_klasifikasi,
+    katagori: data.katagori,
+    tugas: data.tugas,
+    jenjang: data.jenjang,
+    eselon: data.eselon,
+    jabatan: data.jabatan,
+    aktif: "Y",
+  },
+});
+   
+    }
+    
     return response
+}
+
+const showtrx = async(kode_trx)=>{
+    let data = await refSBMHonorarium.findOne({where:{kode_trx:kode_trx}})
+    return data
 }
 
 module.exports ={
@@ -54,5 +89,6 @@ module.exports ={
     show,
     edit,
     store,
-    showunik
+    showunik,
+    showtrx
 }

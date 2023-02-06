@@ -91,6 +91,15 @@ const SuratTugasHonor = db.define(
       type: DataTypes.STRING(225),
       allowNull: true,
     },
+    nomor_spm: {
+      type: DataTypes.STRING(225),
+      allowNull: true,
+    },
+    data_pengusulan: {
+      type: DataTypes.ENUM('TRANSAKSI-HISTORIS','TRANSAKSI-BARU'),
+      allowNull: false,
+      defaultValue:'TRANSAKSI-BARU'
+    },
     ucr: {
       type: DataTypes.STRING(100),
       allowNull: true,

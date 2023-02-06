@@ -1,4 +1,5 @@
 const { jsonFormat } = require("../utils/jsonFormat");
+const uuidv4 = require('uuid/v4');
 const axios = require("axios");
 const request = require("request");
 const PetugasPerjadinBiaya = require("../models/trx_petugas_perjadin_biaya");
@@ -14,8 +15,8 @@ const fs = require('fs');
 //const fsPromise = require('fs/promises');
 const puppeteer  = require("puppeteer");
 const path = require("path");
-const https = require('https');
-const FormData = require('form-data');
+// const https = require('https');
+var FormData = require('form-data');
 const hostsiakun = process.env.hostSiakun
 const hostSiakunBe1 = process.env.hostSiakunBe1
 const hostEbudgeting = process.env.hostEbudgeting
@@ -220,56 +221,13 @@ let arrresponpanutan = [];
               })
               await browser.close();
             // kirim ke panutan
+            let filename = 'expsipppper_'+randomchar+'.pdf'
               let pathpdf = path.join(__dirname,"../public/perjadin/",'/expsipppper_'+randomchar+'.pdf');
-              let fileexist = fs.existsSync(pathpdf)
-              let pdfupload = fs.createReadStream(pathpdf);
-            data = new FormData();
-            data.append('email', 'expenditure@ecampus.ut.ac.id');
-            data.append('password', 'password123');
-            data.append('id_aplikasi', '4');
-            data.append('id_trx', id_trx);
-            data.append('sifat_surat', sifat_surat);
-            data.append('nomor_surat', nomor_surat);
-            data.append('perihal', perihal);
-            data.append('tanggal_surat', tanggal_surat);
-            data.append('nip_pembuat',nip_pembuat);
-            nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
-            //data.append('nip_penandatangan',nip_penandatangan );
-            data.append('email_penandatangan', email_penandatangan);
-            data.append('pdf', pdfupload);
-            
-            var config = {
-              method: 'post',
-              url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
-              headers: { 
-                 Authorization: `Bearer ${token}`, 
-                
-                ...data.getHeaders()
-              },
-              data : data
-            };
-            
-            let kirimpanutan = await axios(config).then(function (response) {
-            // arrresponpanutan.push(response.data) 
-             arrresponpanutan.push(response.data?.data) 
-             return response.data
-            }).catch(function (error) {
-             arrresponpanutan.push({"gagal":"gagal"})
-            });
-            fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
-            let link_file = generate.linkfilepanutan(req.body.tahun,kirimpanutan.id,kirimpanutan.dokumen)
-            await dokumenKirimPanutan.update({link_file:link_file,id_file:kirimpanutan.id},{where:{
-              id_trx:id_trx
-            }}).catch(function (){ 
-                arrresponpanutan.push('update dokumen kirim panutan error input database')
-            })
+            generate.kirimpanutan(pathpdf,filename,sifat_surat,id_trx,nomor_surat,perihal,tanggal_surat,nip_pembuat,nip_penandatangan,req.body.tahun)
             }
 
             await PetugasPerjadinBiaya.update({nomor_rekening_dipakai:req.body.nomor_rekening_dipakai},{where:{id_surat_tugas:req.body.id_surat_tugas}})
-
-
-
-              jsonFormat(res, "success", "berhasiiiiiiiiiiiiiiiil hore", arrresponpanutan);
+              jsonFormat(res, "success", "berhasil", arrresponpanutan);
             }
             catch(error){jsonFormat(res, "failed", error.message, []);}
 }
@@ -321,3 +279,9 @@ let siakun = async(data)=>{
   .catch((err)=>{throw new Error(`Error siakun ${err.message}`)})
   return lemparsiakun
 }
+
+
+
+
+
+

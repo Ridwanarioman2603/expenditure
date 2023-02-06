@@ -2,9 +2,11 @@ const { check } = require("express-validator");
 
 exports.create = [
   check("id_surat_tugas").notEmpty().withMessage("id surat harus di isi."),
-  check("kode_rka").notEmpty().withMessage("nomor surat harus di isi."),
+  check("kode_rka").notEmpty().withMessage("kode_rka harus di isi."),
+  check("dokumen").notEmpty().withMessage("dokumen harus di isi."),
   check("kode_kegiatan_ut_detail").notEmpty().withMessage("Kode kegiatan harus di isi."),
   check("kode_unit").notEmpty().withMessage("Kode unit harus di isi."),
+  // check("data_pengusulan").notEmpty().isIn(['TRANSAKSI-HISTORIS','TRANSAKSI-BARU']).withMessage("data_pengusulan harus di isi. ['TRANSAKSI-HISTORIS','TRANSAKSI-BARU']"),
   check("ucr").notEmpty().withMessage("User create harus di ada."),
 ];
 
@@ -23,6 +25,7 @@ exports.inputRKA = [
   check("tanggal_surat_tugas").notEmpty().withMessage("tanggal_surat_tugas harus di isi."),
   check("kode_sub_unit").notEmpty().withMessage("kode_sub_unit harus di isi."),
   check("kode_unit").notEmpty().withMessage("kode_unit harus di isi."),
+  // check("data_pengusulan").notEmpty().isIn(['TRANSAKSI-HISTORIS','TRANSAKSI-BARU']).withMessage("data_pengusulan harus di isi. ['TRANSAKSI-HISTORIS','TRANSAKSI-BARU']"),
   check("tahun").notEmpty().withMessage("tahun harus di isi."),
   check("ucr").notEmpty().withMessage("ucr harus di isi."),
   check("pegawai").notEmpty().withMessage("pegawai harus di isi."),

@@ -5,6 +5,7 @@ const hostProdevPanutan = process.env.hostProdevPanutan
 const hostProdevPanutannew = process.env.hostProdevPanutannew
 const idAPI = require("../../lang/id-api.json")
 const db = require("../../config/database");
+const dataHTML = require("./datahtmlpevita")
 const { jsonFormat } = require("../../utils/jsonFormat")
 const puppeteer  = require("puppeteer");
 const path = require("path");
@@ -13,14 +14,12 @@ const FormData = require('form-data');
 const { dataKirimPanutan } = require("../honorarium/ref_honorarium_kegiatan_data");
 const aplikasi = process.env.aplikasi
 
-let token = async() =>{ const gettoken = await axios .post(`${hostPevita}${idAPI.pevita.login}`).catch(function(error){
+let token = async() =>{ 
+  const gettoken = await axios .post(`${hostPevita}${idAPI.pevita.login}`).catch(function(error){
      jsonFormat(res, "failed", error.message, []);});
     return gettoken.data.access_token}
 
-const createnomor = (req,res,next)=>{ 
-        
-        
-        
+const createnomor = (req,res,next)=>{  
         dokumenKirimPanutan.max('id_trx').then((maxtrx)=>{
           let datanomor = datagetnomor(req.body,maxtrx+1)
           return token().then((tokenpevita)=>{
@@ -48,6 +47,42 @@ const createnomor = (req,res,next)=>{
           next(error)
         });  
 }
+const createrenderwithnomor = (body,dokumen)=>{
+  dokumenKirimPanutan.max('id_trx').then((trxmax)=>{
+    for(let i = 0;i < dokumen.length; i++){
+      let datanomor = datagetnomor(dokumen[i],trxmax+i+1)
+       return axios .post(`${hostPevita}${idAPI.pevita.lat_nosurat}`,datanomor,{ headers: { Authorization: `Bearer ${tokenpevita}` }}).then((nomor)=>{
+       
+      })
+    }
+  })
+}
+
+let renderdokumen = (body,dokumen) =>{
+  let scriptHtml = dataHTML(dokumen,dokumen.jenis_html)
+  pdf = (scriptHtml);
+    puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true}).then((browser)=>{
+    return browser.newPage().then((page)=>{
+      return page.setContent(pdf).then((pagePdf)=>{
+        return pagePdf.pdf({ 
+        path : folderpath+'/expsipppper_'+randomchar+'.pdf',
+        // paperWidth:8.5,
+        // paperHeight:13,
+        format: 'Legal',
+          printBackground: true,
+          margin: {
+              left: '0px',
+              top: '0px',
+              right: '0px',
+              bottom: '0px'
+          }})
+      })
+    }).close()
+  })
+}
+
+
+
 const fgetnomor = (body)=>{
   let tokenpevita = token()
   return axios .post(`${hostPevita}${idAPI.pevita.lat_nosurat}`,data,{ headers: { Authorization: `Bearer ${tokenpevita}` }})
@@ -55,7 +90,6 @@ const fgetnomor = (body)=>{
     return nomor.data
   }).catch((a)=> [])
 }
-
 
 const datadokumen = (body,id_nomor,nomor,aktif) =>{
   return {
@@ -97,7 +131,28 @@ return {
 }
 }
 
+const generateNomor = (
+  id_surat_tugas,
+  katagori_surat,
+  kode_unit,
+  tahun,
+  type_surat,
+  sifat_surat,
+  id_jenis_surat,
+  id_jenis_nd,
+  perihal,
+  id_klasifikasi,
+  id_sub_unit,
+  id_user,
+  ucr,
+  tanggal
+) => 
+{
+  
+};
+
 module.exports = {
   createnomor,
-  fgetnomor
-}
+  fgetnomor,
+  
+};

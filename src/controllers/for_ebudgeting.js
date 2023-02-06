@@ -11,7 +11,6 @@ const fs = require('fs');
 const https = require('https');
 const path = require("path");
 const request = require('request');
-const FormData = require('form-data');
 
 exports.cekRKA = async(req,res,next)=>{
     const perjadin = await SuratTugasRKAPerjadin.findAll({where:{kode_rka:req.params.kode_rka}})

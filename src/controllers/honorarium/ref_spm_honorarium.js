@@ -61,7 +61,7 @@ const listSPMHonorSudahTTE = async(req,res,next) =>{
         FROM trx_dokumen_kirim_ke_panutan b INNER JOIN ref_surat_tugas_honor a 
        ON a.kode_surat = b.id_surat_tugas LEFT JOIN ref_status c
        ON c.kode_status = a.kode_status
-       WHERE b.aktif IN (1,2) AND a.kode_status IN(:kode_status) AND a.tahun = :tahun 
+       WHERE b.aktif IN (2) AND a.kode_status IN(:kode_status) AND a.tahun = :tahun 
        AND a.jenis_honor = :jenis_honor 
        AND a.nama_honor = :nama_honor
        GROUP BY  b.id_surat_tugas`,
@@ -84,4 +84,4 @@ const listSPMHonorSudahTTE = async(req,res,next) =>{
 
 
 
-module.exports = {listSPMHonor,listSPMHonorSelesai}
+module.exports = { listSPMHonor, listSPMHonorSelesai, listSPMHonorSudahTTE };

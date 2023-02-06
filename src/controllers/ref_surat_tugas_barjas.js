@@ -341,98 +341,138 @@
     }
 
     exports.renderkrirmspm = async(req,res,next) =>{
-    try{
-    let characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    pdf =(
-      req.body.scriptHtml
-    );
-    browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true})
-    page = await browser.newPage()
-    await page.setContent(pdf)
-    randomchar = '';
-      charactersLength = characters.length;
-      for ( let i = 0; i < 15; i++ ) {
-          randomchar += characters.charAt(Math.floor(Math.random() * charactersLength));
+      try{
+      let characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      pdf =(
+        req.body.scriptHtml
+      );
+      browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true})
+      page = await browser.newPage()
+      await page.setContent(pdf)
+      randomchar = '';
+        charactersLength = characters.length;
+        for ( let i = 0; i < 15; i++ ) {
+            randomchar += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        folderpath = "./src/public/barjas"
+        fs.mkdir(folderpath,function(e){
+      });
+      buffer = await page.pdf({
+            path : folderpath+'/expsipppbj_spm_'+randomchar+'.pdf',
+          // paperWidth:8.5,
+          // paperHeight:13,
+          format: 'Legal',
+            printBackground: true,
+            margin: {
+                left: '0px',
+                top: '0px',
+                right: '0px',
+                bottom: '0px'
+            }
+        })
+        await browser.close();
+          // kirim ke panutan
+          let filename = 'expsipppbj_spm_'+randomchar+'.pdf'
+          let pathpdf = path.join(__dirname,"../public/barjas/",'/expsipppbj_spm_'+randomchar+'.pdf');
+        generate.kirimpanutan(pathpdf,filename,req.body.sifat_surat,req.body.id_trx,req.body.nomor_surat,req.body.perihal,req.body.tanggal_surat,req.body.nip_pembuat,req.body.nip_penandatangan,req.body.tahun)
+        jsonFormat(res, "success", "berhasil membuat dokumen", [])
+      }catch(err){
+        jsonFormat(res,'failed',err.message,[])
       }
-      folderpath = "./src/public/barjas"
-      fs.mkdir(folderpath,function(e){
-    });
-    buffer = await page.pdf({
-          path : folderpath+'/expsipppbj_spm_'+randomchar+'.pdf',
-        // paperWidth:8.5,
-        // paperHeight:13,
-        format: 'Legal',
-          printBackground: true,
-          margin: {
-              left: '0px',
-              top: '0px',
-              right: '0px',
-              bottom: '0px'
-          }
-      })
-      await browser.close();
+    }
+    // exports.renderkrirmspm = async(req,res,next) =>{
+    // try{
+    // let characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    // pdf =(
+    //   req.body.scriptHtml
+    // );
+    // browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true})
+    // page = await browser.newPage()
+    // await page.setContent(pdf)
+    // randomchar = '';
+    //   charactersLength = characters.length;
+    //   for ( let i = 0; i < 15; i++ ) {
+    //       randomchar += characters.charAt(Math.floor(Math.random() * charactersLength));
+    //   }
+    //   folderpath = "./src/public/barjas"
+    //   fs.mkdir(folderpath,function(e){
+    // });
+    // buffer = await page.pdf({
+    //       path : folderpath+'/expsipppbj_spm_'+randomchar+'.pdf',
+    //     // paperWidth:8.5,
+    //     // paperHeight:13,
+    //     format: 'Legal',
+    //       printBackground: true,
+    //       margin: {
+    //           left: '0px',
+    //           top: '0px',
+    //           right: '0px',
+    //           bottom: '0px'
+    //       }
+    //   })
+    //   await browser.close();
 
-    await axios .post(`${hostPevita}${idAPI.pevita.login}`).then((token) =>{
-      // if(!token.data.access_token){
-      //   throw Error('Token tidak didapat')
-      // }
-        // kirim ke panutan
-        let pathpdf = path.join(__dirname,"../public/barjas/",'/expsipppbj_spm_'+randomchar+'.pdf');
-        let fileexist = fs.existsSync(pathpdf)
-        console.log("file exist:", req.body.nip_penandatangan);
+    // await axios .post(`${hostPevita}${idAPI.pevita.login}`).then((token) =>{
+    //   // if(!token.data.access_token){
+    //   //   throw Error('Token tidak didapat')
+    //   // }
+    //     // kirim ke panutan
+    //     let pathpdf = path.join(__dirname,"../public/barjas/",'/expsipppbj_spm_'+randomchar+'.pdf');
+    //     let fileexist = fs.existsSync(pathpdf)
+    //     console.log("file exist:", req.body.nip_penandatangan);
 
-        let pdfupload = fs.createReadStream(pathpdf);
-      data = new FormData();
-      data.append('email', 'expenditure@ecampus.ut.ac.id');
-      data.append('password', 'password123');
-      data.append('id_aplikasi', '4');
-      data.append('id_trx', req.body.id_trx);
-      data.append('sifat_surat', req.body.sifat_surat);
-      data.append('nomor_surat', req.body.nomor_surat);
-      data.append('perihal', req.body.perihal);
-      data.append('tanggal_surat', req.body.tanggal_surat);
-      data.append('nip_pembuat',req.body.nip_pembuat);
-      req.body.nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
-      //data.append('nip_penandatangan[]',req.body.nip_penandatangan);
-      data.append('email_penandatangan', req.body.email_penandatangan);
-      data.append('pdf', pdfupload);
+    //     let pdfupload = fs.createReadStream(pathpdf);
+    //   data = new FormData();
+    //   data.append('email', 'expenditure@ecampus.ut.ac.id');
+    //   data.append('password', 'password123');
+    //   data.append('id_aplikasi', '4');
+    //   data.append('id_trx', req.body.id_trx);
+    //   data.append('sifat_surat', req.body.sifat_surat);
+    //   data.append('nomor_surat', req.body.nomor_surat);
+    //   data.append('perihal', req.body.perihal);
+    //   data.append('tanggal_surat', req.body.tanggal_surat);
+    //   data.append('nip_pembuat',req.body.nip_pembuat);
+    //   req.body.nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
+    //   //data.append('nip_penandatangan[]',req.body.nip_penandatangan);
+    //   data.append('email_penandatangan', req.body.email_penandatangan);
+    //   data.append('pdf', pdfupload);
       
-      var config = {
-        method: 'post',
-        url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
-        headers: { 
-          Authorization: `Bearer ${token}`, 
+    //   var config = {
+    //     method: 'post',
+    //     url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
+    //     headers: { 
+    //       Authorization: `Bearer ${token}`, 
           
-          ...data.getHeaders()
-        },
-        data : data
-      };
+    //       ...data.getHeaders()
+    //     },
+    //     data : data
+    //   };
       
-      return axios(config).then((kirim)=>{
-        fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
-        let link_file = generate.linkfilepanutan(req.body.tahun,kirim.data.id,kirim.data.dokumen)
-        return dokumenKirimPanutan.update({link_file:link_file},{where:{
-          id_trx:req.body.id_trx
-        }}).then((updateDokumen)=>{
-          jsonFormat(res, "success", "berhasil membuat dokumen", updateDokumen)
-        }).catch((err)=>{
-          fs.unlink(pathpdf, (err) => {
-            console.log("unlink error", err);
-          });
-          jsonFormat(res, "failed", err.message, "satu")})
-      }).catch((err)=>{
-        fs.unlink(pathpdf, (err) => {
-          console.log("unlink error", err);
-        });
-        console.log(err)
-        jsonFormat(res, "failed", err.message, "dua")})
+    //   return axios(config).then((kirim)=>{
+    //     fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
+    //     let link_file = generate.linkfilepanutan(req.body.tahun,kirim.data.id,kirim.data.dokumen)
+    //     return dokumenKirimPanutan.update({link_file:link_file},{where:{
+    //       id_trx:req.body.id_trx
+    //     }}).then((updateDokumen)=>{
+    //       jsonFormat(res, "success", "berhasil membuat dokumen", updateDokumen)
+    //     }).catch((err)=>{
+    //       fs.unlink(pathpdf, (err) => {
+    //         console.log("unlink error", err);
+    //       });
+    //       jsonFormat(res, "failed", err.message, "satu")})
+    //   }).catch((err)=>{
+    //     fs.unlink(pathpdf, (err) => {
+    //       console.log("unlink error", err);
+    //     });
+    //     console.log(err)
+    //     jsonFormat(res, "failed", err.message, "dua")})
       
-    }).catch((err)=>{
-      jsonFormat(res, "failed", err.message, "tiga")})
-    }catch(err){
-      next(err)
-    }
-    }
+    // }).catch((err)=>{
+    //   jsonFormat(res, "failed", err.message, "tiga")})
+    // }catch(err){
+    //   next(err)
+    // }
+    // }
 
     exports.listSPM = async(req,res,next) =>{
     try{
@@ -549,7 +589,7 @@
         throw new Error('Data tidak ada pada sistem')
       }
       
-      const dokumenPanutan = await dokumenKirimPanutan.findAll({where:{id_surat_tugas:kode_permintaan,tahun:tahun,aktif:{[Op.in]:[1,2]},katagori_surat:{[Op.in]:[`barjas-${Barjas.aplikasi}-keuangan`]}}})
+      const dokumenPanutan = await dokumenKirimPanutan.findAll({where:{id_surat_tugas:kode_permintaan,tahun:tahun,aktif:{[Op.in]:[1,2]}}})
       //dokumen panutan
       const APIPanutan = await axios .get(`${hostProdevPanutannew}${idAPI.panutan.data_apl_external}`)
       const dokumenDariPanutan = APIPanutan?.data?.data
@@ -580,7 +620,7 @@
         let filterPanutan = dokumenDariPanutan.filter((f)=> f.id_trx == dp.id_trx);
         let link_file = ""
         let status_tandatangan = ""
-        if(dp.aktif === 1){
+        if(dp.aktif === 2){
         status_tandatangan = "sudah di tandatangani"
         }else{
         status_tandatangan = "belum ditandatangani"
@@ -637,9 +677,5 @@
         "nama_pembuat":data.nama_pembuat,
         "tanggal":data.tanggal_buat
   },{ headers: { Authorization: `Bearer ${token.data.access_token}` }})
-
-  return nomor?.data
+    return nomor?.data
     }
-
-
-    

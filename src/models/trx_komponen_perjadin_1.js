@@ -45,8 +45,17 @@ const KomponenPerjadin_1 = db.define(
       type: DataTypes.STRING(2),
       allowNull: false,
     },
+    kode_trx: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      autoIncrement:true
+    },
     biaya_satuan: {
       type: DataTypes.DECIMAL(10,0),
+      allowNull: false,
+    },
+    satuan_sbm: {
+      type: DataTypes.DECIMAL(20,2),
       allowNull: false,
     },
     pajak_persen: {
@@ -66,9 +75,17 @@ const KomponenPerjadin_1 = db.define(
       allowNull: true,
       },
     total: {
-        type: DataTypes.DECIMAL(10,0),
+        type: DataTypes.DECIMAL(20,2),
         allowNull: true,
         },
+    dapat_diedit:{
+      type: DataTypes.ENUM('BISA','TIDAK_BISA'),
+      allowNull: true,
+    },
+    dapat_melebihi:{
+      type: DataTypes.ENUM('BISA','TIDAK_BISA'),
+      allowNull: true,
+    }
     
   },
   {

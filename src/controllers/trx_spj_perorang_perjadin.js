@@ -122,7 +122,7 @@ exports.create = async (req,res,next) => {
                 kode_surat:req.body.kode_surat,
                 nip:req.body.nip,
                 kode_rka:req.body.kode_rka,
-                kode_periode:req.body.kode_periode,
+                bulan_rka:req.body.kode_periode,
                 kode_kota_tujuan:req.body.kode_kota_tujuan,
                 nomor_surat_tugas:req.body.nomor_surat_tugas,
                 tanggal_surat:req.body.tanggal_surat,
@@ -211,3 +211,138 @@ exports.createVA = async(req,res,next) =>{
         
     }
 }
+
+// 1. ambil list user yang atcost
+exports.userAtCost = (req, res, next) => {
+  const kodeUnit = req.body.kode_unit;
+
+  spjPerorang
+    .findAll({ where: { status: "-01", kode_unit: kodeUnit } })
+    .then((spo) => {
+      jsonFormat(res, "success", "berhasil menampilkan data", spo);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+// 2. simpan petugas perjadin add cost, update status spj
+exports.addSuratCost = (req, res, next) => {
+  // pagu (select)
+  const kodeMenu = "M08.01.01";
+  const tanggal = new Date();
+
+  // nip
+  const nip = req.body.nip;
+
+  const kodeKotaTujuan = kodeKotaTujuan;
+  const kodeSurat = req.body.kodeSurat;
+  const nomorSurat = req.body.noSurat;
+  const perihal = req.body.perihal;
+  const tanggalSurat = req.body.tanggalSurat;
+  const kodeUnit = req.body.kodeUnit;
+  const tahun = req.body.tahun;
+  const kodeStatus = req.body.status;
+
+  return db
+    .transaction()
+    .then((t) => {
+      return SuratAtcost.create(
+        {
+          kode_surat: kodeSurat,
+          nomor_surat: nomorSurat,
+          perihal: perihal,
+          tanggal_surat: tanggalSurat,
+          kode_unit: kodeUnit,
+          tahun: tahun,
+          kode_status: kodeStatus,
+        },
+        {
+          transaction: t,
+        }
+      )
+        .then((newAtCost) => {
+          if (!newAtCost) {
+            throw new Error("gagal menyimpan data");
+          }
+
+          return spjPerorang.update(
+            {
+              status: "00",
+            },
+            {
+              where: {
+                nip: nip,
+                kodeSurat: kodeSurat,
+                kodeKotaTujuan: kodeKotaTujuan,
+              },
+              transaction: t,
+            }
+          );
+        })
+        .then((updatePetugas) => {
+          if (!updatePetugas) {
+            throw new Error("gagal update data");
+          }
+
+          return spjPerorang.findOne({
+            where: {
+              nip: nip,
+              kodeSurat: kodeSurat,
+              kodeKotaTujuan: kodeKotaTujuan,
+            },
+            transaction: t,
+          });
+        })
+        .then((exPetugas) => {
+          return storePagu(
+            tahun,
+            kodeMenu,
+            id_surat_tugas,
+            tanggal,
+            nomorSurat,
+            exPetugas.kode_rka,
+            exPetugas.bulan_rka,
+            exPetugas.nominal
+          );
+        })
+        .then((apiRes) => {
+          if (!apiRes) {
+            throw new Error("Api gagal");
+          }
+          t.commit();
+        })
+        .catch((err) => {
+          t.rollback();
+          return err;
+        });
+    })
+    .then(() => {
+      jsonFormat(res, "success", "berhasil", []);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getDetailSuratCost = (req, res, next) => {
+  const kodeSurat = req.body.kodeSurat;
+  const nomorSurat = req.body.nomorSurat;
+  const kodeUnit = req.body.kodeUnit;
+  const nip = req.body.nip;
+
+  SuratAtcost.findOne({
+    where: {
+      kodeSurat: kodeSurat,
+      nomorSurat: nomorSurat,
+      kodeUnit: kodeUnit,
+      nip: nip,
+    },
+  })
+    .then((sc) => {
+      jsonFormat(res, "success", "berhasil..", sc);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};

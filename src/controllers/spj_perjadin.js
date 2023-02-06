@@ -5,6 +5,7 @@ const SuratTugasPerjadin = require("../models/ref_surat_tugas_perjadin");
 const KomponenPerjadin_1 = require("../models/trx_komponen_perjadin_1");
 const KomponenPerjadinRealisasi = require("../models/trx_komponen_perjadin_realisasi");
 const fileRealisasiPerjadin = require("../models/trx_file_realisasi_perjadin");
+const trxSPPD = require("../models/trx_sppd")
 const spjPerorang =require("../models/trx_spj_perorang_perjadin");
 const { type } = require("express/lib/response");
 const { QueryTypes,Op,fn,col } = require("sequelize");
@@ -244,7 +245,7 @@ exports.nestedspjperorang = async (req,res,next) => {
 }
 
 exports.listspjperorang = (req,res,next) =>{
-    PetugasPerjadinBiaya.findAll({attributes:{exclude:['ucr','uch','udcr','udch']},include:['surat'],where:{nip:req.params.nip,status_pengusulan:{[Op.in]:["2","3"]}},group:'id_surat_tugas'}).then((ppbg)=>{
+    PetugasPerjadinBiaya.findAll({attributes:{exclude:['ucr','uch','udcr','udch']},include:['surat'],where:{nip:req.params.nip,status_pengusulan:{[Op.in]:["0","1","2","3"]}},group:'id_surat_tugas'}).then((ppbg)=>{
             if(ppbg.length === 0){
             res.statusCode = 404;
             let err = new Error('Data tidak ada')
@@ -259,101 +260,129 @@ exports.listspjperorang = (req,res,next) =>{
     })
 }
 
-exports.detailspjperorang = (req,res,next) =>{
-   
-        PetugasPerjadinBiaya.findAll({include:['surat'],where:{nip:req.params.nip,id_surat_tugas:req.params.id_surat_tugas},group:'id_surat_tugas'}).then((ppbg)=>{
-            if(ppbg.length === 0){
-                res.statusCode = 404;
-                let err = new error('Data tidak ada')
-                throw err
-            }
-            PetugasPerjadinBiaya.findAll({where:{nip:req.params.nip,id_surat_tugas:req.params.id_surat_tugas}
-            }).then((ppb)=>{
-                KomponenPerjadin_1.findAll({where:{nip:req.params.nip,id_surat_tugas:req.params.id_surat_tugas,kode_komponen_honor:{[Op.not]:4}}}).then((kp)=>{
-                        fileRealisasiPerjadin.findAll({where:{nip:req.params.nip,id_surat_tugas:req.params.id_surat_tugas}}).then((frp)=>{
-                            let arrppbg = []
-                        ppbg.map((a)=>{
-                            let arrppb = []
-                            ppb.map((b)=>{
-                                let arrkp = []
-                                let biayaperorangperjalanan = 0
-                                kp.map((c)=>{
-                                    let arrfrp = []
-                                    let biayarealisasi = 0
-                                    if( c.kode_kota_tujuan===b.kode_kota_tujuan){
-                                        biayaperorangperjalanan = biayaperorangperjalanan+parseInt(c.total)
-                                        frp.map((d)=>{
-                                            if(c.kode_komponen_honor == d.kode_komponen_honor && c.kode_kota_tujuan == d.kode_kota_tujuan){
-                                                biayarealisasi=biayarealisasi+parseInt(d.biaya)
-                                                arrfrp.push({
-                                                    "id_trx":d.id_trx,
-                                                    "keterangan":d.keterangan,
-                                                    "link_file":d.link_file,
-                                                    "biaya":d.biaya
-                                                })
-                                            }
-                                        })
-                                        arrkp.push({
-                                            "kode_komponen_honor":c.kode_komponen_honor,
-                                            "keterangan_komponen":c.keterangan_komponen,
-                                            "kode_satuan":c.kode_satuan,
-                                            "biaya":c.total,
-                                            "realisasi":biayarealisasi,
-                                            "fileralisasi":arrfrp
-                                        })
-                                    }
-                                })
-                                if(b.kode_unit_tujuan == ""){
-                                    kode_unit_tujuan = null
-                                    barcode = null
-                                }else{
-                                    kode_unit_tujuan = b.kode_unit_tujuan
-                                    barcode = b.id_surat_tugas+"-"+b.nip+"-"+b.kode_unit_tujuan
-                                }
-                                arrppb.push({
-                                    "kode_provinsi_asal":b.kode_provinsi_asal,
-                                    "kode_kota_asal":b.kode_kota_asal,
-                                    "nama_kota_asal":b.nama_kota_asal,
-                                    "kode_provinsi_tujuan":b.kode_provinsi_tujuan,
-                                    "kode_kota_tujuan":b.kode_kota_tujuan,
-                                    "nama_kota_tujuan":b.nama_kota_tujuan,
-                                    "kode_unit_tujuan":kode_unit_tujuan,
-                                    "barcode_sppd":barcode,
-                                    "tahun":b.tahun,
-                                    "tanggal_pergi":b.tanggal_pergi,
-                                    "tanggal_pulang":b.tanggal_pulang,
-                                    "lama_perjalanan":b.lama_perjalanan,
-                                    "transport":b.transport,
-                                    "biaya":biayaperorangperjalanan,
-                                    "komponen":arrkp
-                                })
-                                
-                            })
-                            arrppbg.push({
-                                "id_surat_tugas":a.id_surat_tugas,
-                                "kode_rka":a.surat.kode_rka,
-                                "kode_periode":a.surat.kode_periode,
-                                "nomor_surat":a.surat.id_surat_tugas,
-                                "nip":a.nip,
-                                "nama_petugas":a.nama_petugas,
-                                "detail":arrppb
-                            })
-                        })
-                        jsonFormat(res, "success", "Berhasil menampilkan data", arrppbg);
-                        }).catch((err)=>{
-                            jsonFormat(res, "failed", err, [])
-                        })
-                }).catch((err)=>{
-                    jsonFormat(res, "failed", err, [])
-                })
-            }).catch((err)=>{
-                jsonFormat(res, "failed", err, [])
-            })
-            
-        }).catch((err)=>{
-            jsonFormat(res, "failed", err, [])
-        })
-}
+
+
+exports.detailspjperorang = async (req, res, next) => {
+  try {
+    let ppbg = await PetugasPerjadinBiaya.findAll({
+      include: ["surat"],
+      where: { nip: req.params.nip, id_surat_tugas: req.params.id_surat_tugas },
+      group: "id_surat_tugas",
+    });
+
+    let ppb = await PetugasPerjadinBiaya.findAll({
+      where: {
+        nip: req.params.nip,
+        id_surat_tugas: req.params.id_surat_tugas,
+      },
+    });
+
+    let kp = await KomponenPerjadin_1.findAll({
+      where: {
+        nip: req.params.nip,
+        id_surat_tugas: req.params.id_surat_tugas,
+        kode_komponen_honor: { [Op.not]: 4 },
+      },
+    });
+
+    let frp = fileRealisasiPerjadin.findAll({
+      where: {
+        nip: req.params.nip,
+        id_surat_tugas: req.params.id_surat_tugas,
+      },
+    });
+
+    let sppd = await trxSPPD.findAll({
+      where: {
+        nip: req.params.nip,
+        kode_surat_tugas: req.params.id_surat_tugas,
+      },
+    });
+
+    let arrppbg = [];
+    ppbg.map((a) => {
+      let arrppb = [];
+      ppb.map((b) => {
+        let arrkp = [];
+        let sppdDokumen = [];
+        let biayaperorangperjalanan = 0;
+        sppd.map((msppd) => {
+          if (msppd.kode_kota_tujuan === b.kode_kota_tujuan) {
+            sppdDokumen.push(msppd);
+          }
+        });
+        kp.map((c) => {
+          let arrfrp = [];
+          let biayarealisasi = 0;
+          if (c.kode_kota_tujuan === b.kode_kota_tujuan) {
+            biayaperorangperjalanan =
+              biayaperorangperjalanan + parseInt(c.total);
+            frp.map((d) => {
+              if (
+                c.kode_komponen_honor == d.kode_komponen_honor &&
+                c.kode_kota_tujuan == d.kode_kota_tujuan
+              ) {
+                biayarealisasi = biayarealisasi + parseInt(d.biaya);
+                arrfrp.push({
+                  id_trx: d.id_trx,
+                  keterangan: d.keterangan,
+                  link_file: d.link_file,
+                  biaya: d.biaya,
+                });
+              }
+            });
+            arrkp.push({
+              kode_komponen_honor: c.kode_komponen_honor,
+              keterangan_komponen: c.keterangan_komponen,
+              kode_satuan: c.kode_satuan,
+              biaya: c.total,
+              realisasi: biayarealisasi,
+              fileralisasi: arrfrp,
+            });
+          }
+        });
+        if (b.kode_unit_tujuan == "") {
+          kode_unit_tujuan = null;
+          barcode = null;
+        } else {
+          kode_unit_tujuan = b.kode_unit_tujuan;
+          barcode = b.id_surat_tugas + "-" + b.nip + "-" + b.kode_unit_tujuan;
+        }
+        arrppb.push({
+          kode_provinsi_asal: b.kode_provinsi_asal,
+          kode_kota_asal: b.kode_kota_asal,
+          nama_kota_asal: b.nama_kota_asal,
+          kode_provinsi_tujuan: b.kode_provinsi_tujuan,
+          kode_kota_tujuan: b.kode_kota_tujuan,
+          nama_kota_tujuan: b.nama_kota_tujuan,
+          kode_unit_tujuan: kode_unit_tujuan,
+          barcode_sppd: barcode,
+          tahun: b.tahun,
+          tanggal_pergi: b.tanggal_pergi,
+          tanggal_pulang: b.tanggal_pulang,
+          lama_perjalanan: b.lama_perjalanan,
+          transport: b.transport,
+          biaya: biayaperorangperjalanan,
+          sppd: sppdDokumen,
+          komponen: arrkp,
+        });
+      });
+      arrppbg.push({
+        id_surat_tugas: a.id_surat_tugas,
+        kode_rka: a.surat.kode_rka,
+        kode_periode: a.surat.kode_periode,
+        nomor_surat: a.surat.id_surat_tugas,
+        nip: a.nip,
+        nama_petugas: a.nama_petugas,
+        detail: arrppb,
+      });
+    });
+
+    jsonFormat(res, "success", "Berhasil menampilkan data", arrppbg);
+  } catch (err) {
+    jsonFormat(res, "failed", err.message, []);
+  }
+};
 
 exports.listperUnit = (req,res,next)=>{
    

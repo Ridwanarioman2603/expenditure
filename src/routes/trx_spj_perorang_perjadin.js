@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const {
-    getByUnit,
-    getByNip,
-    getByprimarykey,
-    create,
-    detailVA
+  getByUnit,
+  getByNip,
+  getByprimarykey,
+  create,
+  detailVA,
+  userAtCost,
+  addSuratCost,
+  getDetailSuratCost
 } = require("../controllers/trx_spj_perorang_perjadin");
 
 const SPJSchema = require("../request/trx_spj_perorang_perjadin")
@@ -18,5 +21,8 @@ router.get("/getByNip/:nip", getByNip);
 router.get("/getByprimarykey/:kode_surat/:nip/:kode_kota_tujuan",getByprimarykey);
 router.post("/create",SPJSchema.create,validate.process,create);
 router.get("/virtual-account/:nomor_va",detailVA)
+
+router.get("/list-surat-atcost/:kode_unit", userAtCost);
+router.get("/list-surat-atcost/:kode_unit", getDetailSuratCost);
 
 module.exports = router;

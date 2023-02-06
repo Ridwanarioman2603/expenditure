@@ -134,6 +134,10 @@ const insertPetugasHonor = async(req,res,next)=>{
     try{
         let dataPetugas = req.body.dataPetugas
         let kode_trx_surat =  await Surat.getKodeTrx(`${req.body.kode_surat}-honorarium`,req.body.tahun)
+        console.log(kode_trx_surat);
+        if(!!kode_trx_surat === false){
+            throw new Error('kode surat tidak cocok')
+        }
         console.log(dataPetugas)
         let dataInsert =  dataPetugas.map(async(a)=>{
             let sbm =  await sbmHonorarium.showunik(req.body,a).then((b)=> {if(b== null){throw new Error(`ada data yang tidak sesuai sbm silahkan cek data yang diinputkan nama: ${a.nama} / nip : ${a.nip}`)} return b})
@@ -168,9 +172,40 @@ const insertPetugasHonor = async(req,res,next)=>{
     }
 }
 
+const updateNominalPetugasHonor = (req,res,next) =>{
+    petugasHonorarium.findOne({where:{kode_trx:req.params.kode_trx}})
+    .then((honor)=>{
+        if(honor == null){
+            let err = new Error('data petugas honorarium tidak ada dalam database')
+            err.statusCode = 422
+            throw err
+        }
+        return sbmHonorarium.showtrx(honor.kode_trx_sbm).then((sbm)=>{
+            let batas_satuan_biaya = sbm.satuan_biaya 
+            if(req.body.satuan_biaya > batas_satuan_biaya){
+                let err = new Error('jumlah diterima tidak bisa melebihi batas sbm')
+                err.statusCode = 421
+                throw err
+            }
+            return refPajak.showtrx(honor.kode_trx_pajak).then((pajak) =>{
+                let data_update = datarefHonor.data_update_nominal_petugas(pajak,req.body.satuan_biaya,honor)
+                return petugasHonorarium.update(data_update,{where:{kode_trx:req.params.kode_trx}}).then((upd)=>{
+                    jsonFormat(res,"success","Berhasil merubah data",upd)
+                })
+            })
+        })
+        
+    })
+    .catch((err)=>{
+        err.statusCode = 401
+        next(err)
+    })
+}
+
 module.exports ={
     insertPanitiaKegiatan,
     insertPengisiKegiatan,
     insertTutor,
-    insertPetugasHonor
+    insertPetugasHonor,
+    updateNominalPetugasHonor
 }

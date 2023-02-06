@@ -98,16 +98,20 @@ const trx_petugas_honorarium_all = db.define(
         type: DataTypes.INTEGER(11),
         allowNull: true,
     },
+    satuan_biaya:{
+        type: DataTypes.DECIMAL(20,2),
+        allowNull: true,
+    },
     jumlah_biaya:{
-        type: DataTypes.INTEGER(11),
+        type: DataTypes.DECIMAL(20,2),
         allowNull: true,
     },
     pajak:{
-        type: DataTypes.INTEGER(11),
+        type: DataTypes.DECIMAL(20,2),
         allowNull: true,
     },
     jumlah_diterima:{
-        type: DataTypes.INTEGER(11),
+        type: DataTypes.DECIMAL(20,2),
         allowNull: true,
     },
     kode_bank:{

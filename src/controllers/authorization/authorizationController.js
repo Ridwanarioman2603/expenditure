@@ -16,6 +16,7 @@ const token = (req, res, next) => {
     })
     .then((data) => {
         if(!data) {
+            console.log("ini data",data)
             const error = new Error("Gagal Simpan Token")
             error.statusCode = 422
             throw error
@@ -159,6 +160,7 @@ const auth = (req, res, next) => {
     }
     axios.post(`${hostUsman}/check-token`, data)
     .then((respons) => {
+        console.log("ini reponse",data)
        if(!respons) {
             const error = new Error("Data Gagal Kirim")
             error.statusCode = 422 

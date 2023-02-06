@@ -126,11 +126,11 @@ const renderKirimSPM = async(req,res,next)=>{
     let tokenAPK = await token()
     let randomchars = dataRefHonor.randomchar(15,'all')
     let rendera = await render(req.body.scriptHtml,folderpath,namadepan,randomchars,jenis_file)
-    let dokumenPanutan = await kirim(req.body,req.body.nama_honor,namadepan,randomchars,jenis_file,tokenAPK)
-    let link_file = generate.linkfilepanutan(req.body.tahun,dokumenPanutan.id,dokumenPanutan.dokumen)
-    let updateDokumen = await dokumenKirimPanutan.update({link_file:link_file,id_file:dokumenPanutan.id},{where:{
-          id_trx:dokumen.id_trx
-        }}).then((a)=>{return a}).catch((err)=>{err.statusCode == 403; throw err})
+     let dokumenPanutan = await kirim(req.body,req.body.nama_honor,namadepan,randomchars,jenis_file,tokenAPK)
+    // let link_file = generate.linkfilepanutan(req.body.tahun,dokumenPanutan.id,dokumenPanutan.dokumen)
+    // let updateDokumen = await dokumenKirimPanutan.update({link_file:link_file,id_file:dokumenPanutan.id},{where:{
+    //       id_trx:dokumen.id_trx
+    //     }}).then((a)=>{return a}).catch((err)=>{err.statusCode == 403; throw err})
   jsonFormat(res,"success","Berhasil mengirim data",dokumenPanutan)
   }catch(err){
     next(err)
@@ -167,24 +167,27 @@ let render = async(scriptHtml,folderpath,namadepan,randomchar,jenis_file) =>{
 
 let kirim = async(dokumen,nama_honor,namadepan,randomchar,jenis_file,tokenAPK) =>{
   let pathpdf = path.join(__dirname,"../../public/honorarium/"+nama_honor,namadepan+randomchar+jenis_file);
-  let fileexist = fs.existsSync(pathpdf)
-  console.log(pathpdf)
-  console.log(fileexist)
-  let pdfupload = fs.createReadStream(pathpdf);
-  data = dataRefHonor.dataKirimPanutan(dokumen,pdfupload);
-  var config = {
-  method: 'post',
-  url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
-  headers: { 
-     Authorization: `Bearer ${tokenAPK}`, 
+  let filename = namadepan+randomchar+jenis_file
+  // let fileexist = fs.existsSync(pathpdf)
+  generate.kirimpanutan(pathpdf,filename,dokumen.sifat_surat,dokumen.id_trx,dokumen.nomor_surat,dokumen.perihal,dokumen.tanggal_surat,dokumen.nip_pembuat,dokumen.nip_penandatangan,data.tahun)
+//   console.log(pathpdf)
+//   console.log(fileexist)
+//   let pdfupload = fs.createReadStream(pathpdf);
+//   data = dataRefHonor.dataKirimPanutan(dokumen,pdfupload);
+//   var config = {
+//   method: 'post',
+//   url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
+//   headers: { 
+//      Authorization: `Bearer ${tokenAPK}`, 
     
-    ...data.getHeaders()
-  },
-  data : data
-};
-let response = await axios(config).then((a)=>{return a.data})
-fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
-return response
+//     ...data.getHeaders()
+//   },
+//   data : data
+// };
+// let response = await axios(config).then((a)=>{return a.data})
+// fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
+// return response
+return null
 }
 
 let siakun = async(data)=>{

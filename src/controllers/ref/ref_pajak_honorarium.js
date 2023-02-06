@@ -49,11 +49,16 @@ const showunik = async(golongan,status_npwp)=>{
     let data = await refPajakHonorarium.findOne({where:{golongan:golongan,status_npwp:status_npwp}})
     return data
 }
+const showtrx = async(kode_trx)=>{
+    let data = await refPajakHonorarium.findOne({where:{kode_trx:kode_trx}})
+    return data
+}
 
 module.exports ={
     index,
     show,
     edit,
     store,
-    showunik
+    showunik,
+    showtrx
 }

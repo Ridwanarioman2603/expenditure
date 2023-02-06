@@ -17,20 +17,22 @@ exports.getUnit = async (req, res, next) => {
 };
 
 exports.getUnitbyId = async (req, res, next) => {
- const datap = await axios .get(`${hostProdevPanutannew}${idAPI.panutan.get_unit}`);
+  try { 
+  const datap = await axios .get(`${hostProdevPanutannew}${idAPI.panutan.get_unit}`);
  const pdata = datap.data;
  //console.log("cek pdata",pdata);
    let arrunit = [];
    let pdatafilter = pdata.filter((p) => p.id_sub_unit == req.params.id)[0]
    //console.log("cek filter", pdatafilter.nama_unit);
-   
+   if(arrunit.length === 0){
+    throw new Error("data unit tidak ada")
+   }
       arrunit.push({
         id_sub_unit: pdatafilter.id_sub_unit,
         nama_unit: pdatafilter.nama_unit,
         kode_unit: pdatafilter.kode_unit})   
      
 
-    try { 
       jsonFormat(res, "success", "sukses menampilkan data", arrunit);
     } catch (error) {
       jsonFormat(res, "failed", error.message, []);

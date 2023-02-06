@@ -13,12 +13,12 @@ const detailTransfer = require("../models/ref_detail_transfer");
 const { validationResult } = require("express-validator");
 const db = require("../config/database");
 const { type } = require("express/lib/response");
+const generate = require("../utils/generate");
 const fs = require('fs');
 //const fsPromise = require('fs/promises');
 const puppeteer  = require("puppeteer");
 const path = require("path");
 const https = require('https');
-const FormData = require('form-data');
 const { workerData } = require("worker_threads");
 const hostutpay = process.env.hostutpay
 const hostPevita = process.env.hostPevita
@@ -487,6 +487,7 @@ exports.sptdbyidnestednew = async(req,res,next)=>{
     }
 
 exports.rendersptd = async(req,res,next)=>{
+    try{
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
           return jsonFormat(res, "failed", "validation failede", errors);
@@ -526,73 +527,190 @@ exports.rendersptd = async(req,res,next)=>{
                     await browser.close(); 
                     let link_path = folderpath+'/sppd_'+randomchar+'.pdf'
                     let cek_file = fs.existsSync(link_path)
-                    if(cek_file){
-                         // kirim ke panutan
-                  let pathpdf = path.join(__dirname,"../public/sptd/sppd_"+randomchar+".pdf");
-                  let fileexist = fs.existsSync(pathpdf);
-                  console.log("file exist:", fileexist);
-                  let pdfupload = fs.createReadStream(pathpdf);
-                    data = new FormData();
-                    data.append('email', 'expenditure@ecampus.ut.ac.id');
-                    data.append('password', 'password123');
-                    data.append('id_aplikasi', '4');
-                    data.append('id_trx', req.body.id_trx);
-                    data.append('sifat_surat', req.body.sifat_surat);
-                    data.append('nomor_surat', req.body.nomor_surat);
-                    data.append('perihal', req.body.perihal);
-                    data.append('tanggal_surat', req.body.tanggal_surat);
-                    data.append('nip_pembuat',req.body.nip_pembuat);
-                    req.body.nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
-                    //data.append('nip_penandatangan',req.body.nip_penandatangan );
-                    data.append('email_penandatangan', req.body.email_penandatangan);
-                    data.append('pdf', pdfupload);
+                    const pathpdf = path.join(__dirname,"../public/sptd/sppd_"+randomchar+".pdf");
+                    let filename = "sppd_"+randomchar+".pdf"
+                  generate.kirimpanutan(pathpdf,filename,sifat_surat,id_trx,nomor_surat,perihal,tanggal_surat,nip_pembuat,nip_penandatangan,req.body.tahun)
+                //     if(cek_file){
+                //          // kirim ke panutan
+                  
+                //   let fileexist = fs.existsSync(pathpdf);
+                //   console.log("file exist:", fileexist);
+                //   let pdfupload = fs.createReadStream(pathpdf);
+                //     data = new FormData();
+                //     data.append('email', 'expenditure@ecampus.ut.ac.id');
+                //     data.append('password', 'password123');
+                //     data.append('id_aplikasi', '4');
+                //     data.append('id_trx', req.body.id_trx);
+                //     data.append('sifat_surat', req.body.sifat_surat);
+                //     data.append('nomor_surat', req.body.nomor_surat);
+                //     data.append('perihal', req.body.perihal);
+                //     data.append('tanggal_surat', req.body.tanggal_surat);
+                //     data.append('nip_pembuat',req.body.nip_pembuat);
+                //     req.body.nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
+                //     //data.append('nip_penandatangan',req.body.nip_penandatangan );
+                //     data.append('email_penandatangan', req.body.email_penandatangan);
+                //     data.append('pdf', pdfupload);
                 
-                    //token
-                    const gettoken = await axios .post(`${hostPevita}/utapi/public/api/login?email=expenditure@ecampus.ut.ac.id&password=password123`).catch(function(error){
-                        jsonFormat(res, "failed", error.message, []);
-                      });
-                      const token = gettoken.data["access_token"];
+                //     //token
+                //     const gettoken = await axios .post(`${hostPevita}/utapi/public/api/login?email=expenditure@ecampus.ut.ac.id&password=password123`).catch(function(error){
+                //         jsonFormat(res, "failed", error.message, []);
+                //       });
+                //       const token = gettoken.data["access_token"];
 
 
-                        var config = {
-                        method: 'post',
-                        url: `${hostProdevPanutannew}/api/external/send_data`,
-                        headers: { 
-                            Authorization: `Bearer ${token}`, 
+                //         var config = {
+                //         method: 'post',
+                //         url: `${hostProdevPanutannew}/api/external/send_data`,
+                //         headers: { 
+                //             Authorization: `Bearer ${token}`, 
                             
-                            ...data.getHeaders()
-                        },
-                        data : data
-                        };
-                    }
-                    console.log("ceeeeeeeeeek",data)
-                    await axios(config)
-                    .then((pnt)=>{
-                        db.transaction()
-                        .then((t)=>{
-                            let link_file = `${hostProdevPanutannew}/archive_external/${req.body.tahun}/E-Expenditure/${pnt.data.id}/${pnt.data.dokumen}`  
-                            return dokumenKirimPanutan.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
-                     id_trx:req.body.id_trx},transaction:t
-                    }).then((updateDokumen)=>{
-                        waitingTransfer.update({status:2},{where:{kode_nomor:req.body.kode_nomor_sptd},transaction:t})
-                     .then((updatewait)=>{
-                        if(updatewait == 0){
-                            throw Error("tidak ada data yang dikirim")
-                        }
-                        fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
-                         refSPTD.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
-                            kode_nomor:req.body.kode_nomor_sptd,
-                            kode_surat_trx:req.body.kode_surat_trx
-                        }}).then((updaterefSPTD)=>{
-                            t.commit()
-                            jsonFormat(res, "success", "berhasil merender",[] )
-                        }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "satu");})
-                     }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "dua");})
-                    }).catch((err)=>{jsonFormat(res, "failed", err.message,  "tiga");})
-                    }).catch((err)=>{jsonFormat(res, "failed", err.message,  "empat");})
-                }).catch((err)=>{jsonFormat(res, "failed", err.message,  "lima");})
-                
+                //             ...data.getHeaders()
+                //         },
+                //         data : data
+                //         };
+                //     }
+                //     console.log("ceeeeeeeeeek",data)
+                //      axios(config)
+                //     .then((pnt)=>{
+                //        // let pathpdf = path.join(__dirname,"../public/sptd/sppd_"+randomchar+".pdf");
+                //         fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
+                //         db.transaction()
+                //         .then((t)=>{
+                //             let link_file = `${hostProdevPanutannew}/archive_external/${req.body.tahun}/E-Expenditure/${pnt.data.id}/${pnt.data.dokumen}`  
+                //             return dokumenKirimPanutan.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
+                //      id_trx:req.body.id_trx},transaction:t
+                //     }).then((updateDokumen)=>{
+                //         waitingTransfer.update({status:2},{where:{kode_nomor:req.body.kode_nomor_sptd},transaction:t})
+                //      .then((updatewait)=>{
+                //         if(updatewait == 0){
+                //             throw Error("tidak ada data yang dikirim")
+                //         }
+                //          refSPTD.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
+                //             kode_nomor:req.body.kode_nomor_sptd,
+                //             kode_surat_trx:req.body.kode_surat_trx
+                //         }}).then((updaterefSPTD)=>{
+                //             t.commit()
+                //             jsonFormat(res, "success", "berhasil merender",[] )
+                //         }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "satu");})
+                //      }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "dua");})
+                //     }).catch((err)=>{jsonFormat(res, "failed", err.message,  "tiga");})
+                //     }).catch((err)=>{jsonFormat(res, "failed", err.message,  "empat");})
+                // }).catch((err)=>{jsonFormat(res, "failed", err.message,  "lima");})
+                jsonFormat(res,"success","berhasil")
+            }catch(err){
+                jsonFormat(res,"failed",err.message,[])
+            }     
 }
+
+// exports.rendersptd = async(req,res,next)=>{
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return jsonFormat(res, "failed", "validation failede", errors);
+//     }
+  
+//     let dokumen = req.body.dokumen
+//     pdf =(
+//         req.body.scriptHtml
+//         );
+//              browser = await puppeteer.launch(
+//                 { args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true})
+//              page = await browser.newPage()
+//             await page.setContent(pdf)
+//             characters = '1234567890qwertyuiopasdfghjklzxcvbnm'
+//             randomchar = '';
+//                 charactersLength = characters.length;
+//                 for ( let i = 0; i < 15; i++ ) {
+//                     randomchar += characters.charAt(Math.floor(Math.random() * charactersLength));
+//                 }
+//                 folderpath = "./src/public/sptd"
+//                 fs.mkdir(folderpath,function(e){
+//               });
+    
+//             buffer = await page.pdf({
+//                     path : folderpath+'/sppd_'+randomchar+'.pdf',
+//                   // paperWidth:8.5,
+//                   // paperHeight:13,
+//                   format: 'Legal',
+//                     printBackground: true,
+//                     margin: {
+//                         left: '0px',
+//                         top: '0px',
+//                         right: '0px',
+//                         bottom: '0px'
+//                     }
+//                 })
+//                 await browser.close(); 
+//                 let link_path = folderpath+'/sppd_'+randomchar+'.pdf'
+//                 let cek_file = fs.existsSync(link_path)
+//                 const pathpdf = path.join(__dirname,"../public/sptd/sppd_"+randomchar+".pdf");
+//                 if(cek_file){
+//                      // kirim ke panutan
+              
+//               let fileexist = fs.existsSync(pathpdf);
+//               console.log("file exist:", fileexist);
+//               let pdfupload = fs.createReadStream(pathpdf);
+//                 data = new FormData();
+//                 data.append('email', 'expenditure@ecampus.ut.ac.id');
+//                 data.append('password', 'password123');
+//                 data.append('id_aplikasi', '4');
+//                 data.append('id_trx', req.body.id_trx);
+//                 data.append('sifat_surat', req.body.sifat_surat);
+//                 data.append('nomor_surat', req.body.nomor_surat);
+//                 data.append('perihal', req.body.perihal);
+//                 data.append('tanggal_surat', req.body.tanggal_surat);
+//                 data.append('nip_pembuat',req.body.nip_pembuat);
+//                 req.body.nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
+//                 //data.append('nip_penandatangan',req.body.nip_penandatangan );
+//                 data.append('email_penandatangan', req.body.email_penandatangan);
+//                 data.append('pdf', pdfupload);
+            
+//                 //token
+//                 const gettoken = await axios .post(`${hostPevita}/utapi/public/api/login?email=expenditure@ecampus.ut.ac.id&password=password123`).catch(function(error){
+//                     jsonFormat(res, "failed", error.message, []);
+//                   });
+//                   const token = gettoken.data["access_token"];
+
+
+//                     var config = {
+//                     method: 'post',
+//                     url: `${hostProdevPanutannew}/api/external/send_data`,
+//                     headers: { 
+//                         Authorization: `Bearer ${token}`, 
+                        
+//                         ...data.getHeaders()
+//                     },
+//                     data : data
+//                     };
+//                 }
+//                 console.log("ceeeeeeeeeek",data)
+//                  axios(config)
+//                 .then((pnt)=>{
+//                    // let pathpdf = path.join(__dirname,"../public/sptd/sppd_"+randomchar+".pdf");
+//                     fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
+//                     db.transaction()
+//                     .then((t)=>{
+//                         let link_file = `${hostProdevPanutannew}/archive_external/${req.body.tahun}/E-Expenditure/${pnt.data.id}/${pnt.data.dokumen}`  
+//                         return dokumenKirimPanutan.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
+//                  id_trx:req.body.id_trx},transaction:t
+//                 }).then((updateDokumen)=>{
+//                     waitingTransfer.update({status:2},{where:{kode_nomor:req.body.kode_nomor_sptd},transaction:t})
+//                  .then((updatewait)=>{
+//                     if(updatewait == 0){
+//                         throw Error("tidak ada data yang dikirim")
+//                     }
+//                      refSPTD.update({link_file:link_file,id_file:pnt.data.id,status:1},{where:{
+//                         kode_nomor:req.body.kode_nomor_sptd,
+//                         kode_surat_trx:req.body.kode_surat_trx
+//                     }}).then((updaterefSPTD)=>{
+//                         t.commit()
+//                         jsonFormat(res, "success", "berhasil merender",[] )
+//                     }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "satu");})
+//                  }).catch((err)=>{t.rollback();jsonFormat(res, "failed", err.message,  "dua");})
+//                 }).catch((err)=>{jsonFormat(res, "failed", err.message,  "tiga");})
+//                 }).catch((err)=>{jsonFormat(res, "failed", err.message,  "empat");})
+//             }).catch((err)=>{jsonFormat(res, "failed", err.message,  "lima");})
+            
+// }
 
 exports.getPrimaryKey = async(req,res,next) =>{
     try{

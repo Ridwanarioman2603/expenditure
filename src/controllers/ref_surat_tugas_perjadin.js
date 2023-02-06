@@ -383,6 +383,8 @@ exports.getByIdSurat = async (req, res, next) => {
         "nomor_surat_tugas": surat.nomor_surat,
         "tanggal_surat_tugas": surat.tanggal_surat,
         "tahun": surat.tahun_surat,
+        "keperluan":surat.keperluan,
+        "dokumen":surat.dokumen,
         "request_nomor_surat_ke": null,
         "kode_skema": 0,
         "kode_unit": surat.kode_unit_kerja,
@@ -895,6 +897,234 @@ exports.panutanExcludeExpenditure = async (req,res,next)=>{
   }
 }
 
+// exports.nestednew = async(req,res,next)=>{
+//   try{
+//     let id = req.params.id
+//     console.log("test 2")
+//     // get data nomor surat
+//     const surtug = await SuratTugasPerjadin.findAll({
+//       where: {
+//         id_surat_tugas: id,
+//       },
+//        order:[['udcr','desc']],
+//         include:[{
+//           model:Status,
+//           as:"status"
+//         },{
+//           model:Skema,
+//           as:"skema"
+//         },
+//         {
+//           model:PetugasPerjadinBiaya,
+//           as:"hsurat",
+//           group:["nip"],
+//           }
+//         ],
+//         row:true
+//     });
+//     console.log("test surtug:",surtug)
+//     if(surtug.length == 0){
+//       let err = new Error('data surat tugas perjadin tidak ditemukan')
+//       err.statusCode = 422;
+//       throw err
+//     }
+    
+    
+//   //table dokumen
+//   const dokumenPanutan = await dokumenKirimPanutan.findAll({where:{id_surat_tugas:id,aktif:{[Op.in]:[1,2]},katagori_surat:{[Op.in]:["Perjalanan-Dinas","perjadin-keuangan"]}}})
+//   //dokumen panutan
+//   const APIPanutan = await axios .get(`${hostProdevPanutannew}${idAPI.panutan.data_apl_external}`)
+//   .catch((err) => {return new Error('Data dari Panutan Error: ',err.message)})
+//   const dokumenDariPanutan = APIPanutan?.data?.data
+  
+//   //table pegawai
+//   const hsurat = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id},group:"nip"})
+//   //table pegawai
+//   const pegawai = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id}})
+//   console.log("test 2:" ,pegawai)
+//   //table komponen
+//   const komponen = await KomponenPerjadin_1.findAll({where:{id_surat_tugas:id},order:['kode_komponen_honor']})
+//   console.log("test 3:" ,komponen)
+//   //Data RKA Terpakai
+//   const RKATerpakaiPerjadin = await SuratTugasRKAPerjadin.sum('jumlah_budget',
+//   {where:{kode_rka:surtug[0].kode_rka,kode_periode:surtug[0].kode_periode, id_surat_tugas:{[Op.not]:id}}})
+
+//   console.log("test 4:" ,RKATerpakaiPerjadin)
+//   //data pegawai sebelum dipilih skema
+//   let tbpetugasPanutan = []
+//   if(pegawai.length == 0){
+//     console.log("kesini dulu");
+//     tbpetugasPanutan = await db.query(`SELECT * FROM t_petugas_dummy WHERE id_surat = ${id} GROUP BY id_surat,nip,id_tempat_tujuan`, {
+//       type: QueryTypes.SELECT,
+//     })
+//   }
+
+// console.log(req.headers.token_baru);
+//   //data RKA dari Ebudgeting
+//   const RKADariEbudgeting = await axios
+//     .get(
+//       `${hostEbudgeting}${idAPI.ebudgeting.rka_bulan}/${surtug[0].kode_rka}/${surtug[0].kode_periode}`
+//       // ,
+//       // {
+//       //   headers: {
+//       //     id_user: req.headers.id_user,
+//       //     kode_group: req.headers.kode_group,
+//       //     token_lama: req.headers.token_lama,
+//       //     token_baru: req.headers.token_baru,
+//       //   },
+//       // }
+//     )
+//     .then((data) => {
+//       let dataReturn = data.data;
+//       return dataReturn;
+//     })
+//     .catch((err) => {
+//       let erro = {
+//         message: err.message,
+//         values: [],
+//       };
+//       return erro;
+//     });
+
+//   //Join Surat Tugas dan Pegawai menggunakan map
+//   //array surat tugas paling atas
+//   let arrSurtugNested = []
+//   surtug.map((st)=>{
+//     //array pegawai yang di group by 
+//     let ArrdokumenPanutan = []
+//     dokumenPanutan.map((dp)=>{
+//       let filterPanutan = dokumenDariPanutan.filter((f)=> f.id_trx == dp.id_trx);
+//       let link_file = ""
+//       let status_tandatangan = ""
+//       if(dp.aktif > 1){
+//         status_tandatangan = "sudah di tandatangani"
+//       }else{
+//         status_tandatangan = "belum ditandatangani"
+//       }
+//       ArrdokumenPanutan.push({
+//               "id_trx": dp.id_trx,
+//               "katagori_surat": dp.katagori_surat,
+//               "id_surat_tugas": dp.id_surat_tugas,
+//               "kode_unit": dp.kode_unit,
+//               "tahun": dp.tahun,
+//               "jenis_surat": dp.jenis_surat,
+//               "id_nomor": dp.id_nomor,
+//               "nomor": dp.nomor,
+//               "tanggal": dp.tanggal,
+//               "link_file": dp.link_file,
+//               "status_tandatangan":status_tandatangan,
+//               "aktif": dp.aktif
+//       })
+//     })
+//     let arrPegawaiGroup = []
+//     if(hsurat.length > 0){
+//       hsurat.map((pg)=>{
+//         //array detail perjalanan pegawai
+//         let arrDetailPerjalanan = []
+//         let total_biaya = 0
+//         let pegawaiFilter = pegawai.filter((p)=>p.nip === pg.nip);
+//         pegawaiFilter.map((p)=>{
+//           let komponenFilter = komponen.filter((k)=>k.nip == p.nip && k.kode_kota_asal == p.kode_kota_asal)
+//           let arrKomponen = []
+//           let biayaDetail = 0
+//           komponenFilter.map((kf)=>{
+//             arrKomponen.push({
+//               "id_surat_tugas": kf.id_surat_tugas,
+//               "nip": kf.nip,
+//               "kode_kota_asal": kf.kode_kota_asal,
+//               "kode_kota_tujuan": kf.kode_kota_tujuan,
+//               "urut_tugas": kf.urut_tugas,
+//               "kode_komponen_honor": kf.kode_komponen_honor,
+//               "keterangan_komponen": kf.keterangan_komponen,
+//               "kode_satuan": kf.kode_satuan,
+//               "biaya_satuan": kf.biaya_satuan,
+//               "pajak_persen": kf.pajak_persen,
+//               "jumlah_pajak": kf.jumlah_pajak,
+//               "jumlah": kf.jumlah,
+//               "total": kf.total
+//             })
+//             biayaDetail += parseInt(kf.total)
+//           })
+//           // Mapping Komponen 
+//             arrDetailPerjalanan.push({
+//                 "kode_kota_asal": p.kode_kota_asal,
+//                 "kode_kota_tujuan": p.kode_kota_tujuan,
+//                 "urut_tugas": p.urut_tugas,
+//                 "nama_petugas": p.nama_petugas,
+//                 "nama_bank": p.nama_bank,
+//                 "nomor_rekening": p.nomor_rekening,
+//                 "nomor_rekening_dipakai": p.nomor_rekening_dipakai,
+//                 "npwp": p.npwp,
+//                 "kode_provinsi_asal": p.kode_provinsi_asal,
+//                 "nama_kota_asal": p.nama_kota_asal,
+//                 "kode_provinsi_tujuan": p.kode_provinsi_tujuan,
+//                 "nama_kota_tujuan": p.nama_kota_tujuan,
+//                 "kode_unit_tujuan": p.kode_unit_tujuan,
+//                 "tahun": p.tahun,
+//                 "tanggal_pergi": p.tanggal_pergi,
+//                 "tanggal_pulang": p.tanggal_pulang,
+//                 "lama_perjalanan": p.lama_perjalanan,
+//                 "transport": p.transport,
+//                 "biaya": biayaDetail,
+//                 "komponen": komponenFilter
+//             })
+//             total_biaya += biayaDetail
+//         })
+//       arrPegawaiGroup.push({
+//         "nip":pg.nip,
+//         "nama_pegawai":pg.nama_petugas,
+//         "total_biaya":total_biaya,
+//         "nama_bank":pg.nama_bank,
+//         "nomor_rekening":pg.nomor_rekening,
+//         "nomor_rekening_dipakai":pg.nomor_rekening_dipakai,
+//         "npwp":pg.npwp,
+//         "detail_perjalanan":arrDetailPerjalanan
+//       })
+//       })
+//     }
+//     arrSurtugNested.push({
+//       "id_surat_tugas": st.id_surat_tugas,
+//       "kode_kegiatan_ut_detail": st.kode_kegiatan_ut_detail,
+//       "kode_aktivitas_rkatu": st.kode_aktivitas_rkatu,
+//       "kode_rka": st.kode_rka,
+//       "kode_periode": st.kode_periode,
+//       "nomor_surat_tugas": st.nomor_surat_tugas,
+//       "tanggal_surat_tugas": st.tanggal_surat,
+//       "tahun": st.tahun,
+//       "tanggal_surat_tugas":st.tanggal_surat_tugas,
+//       "kode_unit": st.kode_unit,
+//       "kode_sub_unit": st.kode_sub_unit,
+//       "data_pengusulan":st.data_pengusulan,
+//       "ucr": st.ucr,
+//       "uch": st.uch,
+//       "udcr": st.udcr,
+//       "udch": st.udch,
+//       "status":st.status,
+//       "skema":st.skema,
+//       "dokumen":ArrdokumenPanutan,
+//       "hsurat":arrPegawaiGroup
+//     })
+    
+//   })
+
+
+
+//   //susun data untuk di passing ke body API
+//   let dataOutput = [];
+//   dataOutput.push({
+//     "surtug": arrSurtugNested,
+//     "RKADariEbudgeting": RKADariEbudgeting,
+//     "RKATerpakaiPerjadin": RKATerpakaiPerjadin,
+//     "petugasDummy": tbpetugasPanutan
+//   })
+//   //lemparan data
+//   jsonFormat(res,"success","berhasil memuat data",dataOutput);
+//   }catch(error){
+//     next(error)
+//   }
+  
+// }
+
 exports.nestednew = async(req,res,next)=>{
   try{
     let id = req.params.id
@@ -920,12 +1150,13 @@ exports.nestednew = async(req,res,next)=>{
         ],
         row:true
     });
-    console.log("test surtug:",surtug)
+    // console.log("test surtug:",surtug)
     if(surtug.length == 0){
       let err = new Error('data surat tugas perjadin tidak ditemukan')
       err.statusCode = 422;
       throw err
     }
+    
     
     
   //table dokumen
@@ -935,191 +1166,340 @@ exports.nestednew = async(req,res,next)=>{
   .catch((err) => {return new Error('Data dari Panutan Error: ',err.message)})
   const dokumenDariPanutan = APIPanutan?.data?.data
   
-  //table pegawai
-  const hsurat = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id},group:"nip"})
-  //table pegawai
-  const pegawai = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id}})
-  console.log("test 2:" ,pegawai)
-  //table komponen
-  const komponen = await KomponenPerjadin_1.findAll({where:{id_surat_tugas:id},order:['kode_komponen_honor']})
-  console.log("test 3:" ,komponen)
-  //Data RKA Terpakai
-  const RKATerpakaiPerjadin = await SuratTugasRKAPerjadin.sum('jumlah_budget',
-  {where:{kode_rka:surtug[0].kode_rka,kode_periode:surtug[0].kode_periode, id_surat_tugas:{[Op.not]:id}}})
+  const APIBeritaAcara = await axios.get(`${hostProdevPanutannew}${idAPI.panutan.data_api_beritaacara}/${id}`)
+  .catch((err) => {return new Error('Data dari Panutan Error: ',err.message)})
+  const dataPanutanget = APIBeritaAcara?.data?.data
 
-  console.log("test 4:" ,RKATerpakaiPerjadin)
-  //data pegawai sebelum dipilih skema
-  let tbpetugasPanutan = []
-  if(pegawai.length == 0){
-    console.log("kesini dulu");
-    tbpetugasPanutan = await db.query(`SELECT * FROM t_petugas_dummy WHERE id_surat = ${id} GROUP BY id_surat,nip,id_tempat_tujuan`, {
-      type: QueryTypes.SELECT,
-    })
-  }
+  const APIPengganti = await panutanCek(id)
+  const datapegawaiganti = APIPengganti?.data.data_petugas
+  // const data_path =APIPengganti.data?.path
+  
 
-console.log(req.headers.token_lama);
-console.log(req.headers.token_baru);
-  //data RKA dari Ebudgeting
-  const RKADariEbudgeting = await axios
-    .get(
-      `${hostEbudgeting}${idAPI.ebudgeting.rka_bulan}/${surtug[0].kode_rka}/${surtug[0].kode_periode}`
-      // ,
-      // {
-      //   headers: {
-      //     id_user: req.headers.id_user,
-      //     kode_group: req.headers.kode_group,
-      //     token_lama: req.headers.token_lama,
-      //     token_baru: req.headers.token_baru,
-      //   },
-      // }
-    )
-    .then((data) => {
-      let dataReturn = data.data;
-      return dataReturn;
-    })
-    .catch((err) => {
-      let erro = {
-        message: err.message,
-        values: [],
-      };
-      return erro;
-    });
-
-  //Join Surat Tugas dan Pegawai menggunakan map
-  //array surat tugas paling atas
-  let arrSurtugNested = []
-  surtug.map((st)=>{
-    //array pegawai yang di group by 
-    let ArrdokumenPanutan = []
-    dokumenPanutan.map((dp)=>{
-      let filterPanutan = dokumenDariPanutan.filter((f)=> f.id_trx == dp.id_trx);
-      let link_file = ""
-      let status_tandatangan = ""
-      if(dp.aktif > 1){
-        status_tandatangan = "sudah di tandatangani"
-      }else{
-        status_tandatangan = "belum ditandatangani"
-      }
-      ArrdokumenPanutan.push({
-              "id_trx": dp.id_trx,
-              "katagori_surat": dp.katagori_surat,
-              "id_surat_tugas": dp.id_surat_tugas,
-              "kode_unit": dp.kode_unit,
-              "tahun": dp.tahun,
-              "jenis_surat": dp.jenis_surat,
-              "id_nomor": dp.id_nomor,
-              "nomor": dp.nomor,
-              "tanggal": dp.tanggal,
-              "link_file": dp.link_file,
-              "status_tandatangan":status_tandatangan,
-              "aktif": dp.aktif
-      })
-    })
-    let arrPegawaiGroup = []
-    if(hsurat.length > 0){
-      hsurat.map((pg)=>{
-        //array detail perjalanan pegawai
-        let arrDetailPerjalanan = []
-        let total_biaya = 0
-        let pegawaiFilter = pegawai.filter((p)=>p.nip === pg.nip);
-        pegawaiFilter.map((p)=>{
-          let komponenFilter = komponen.filter((k)=>k.nip == p.nip && k.kode_kota_asal == p.kode_kota_asal)
-          let arrKomponen = []
-          let biayaDetail = 0
-          komponenFilter.map((kf)=>{
-            arrKomponen.push({
-              "id_surat_tugas": kf.id_surat_tugas,
-              "nip": kf.nip,
-              "kode_kota_asal": kf.kode_kota_asal,
-              "kode_kota_tujuan": kf.kode_kota_tujuan,
-              "urut_tugas": kf.urut_tugas,
-              "kode_komponen_honor": kf.kode_komponen_honor,
-              "keterangan_komponen": kf.keterangan_komponen,
-              "kode_satuan": kf.kode_satuan,
-              "biaya_satuan": kf.biaya_satuan,
-              "pajak_persen": kf.pajak_persen,
-              "jumlah_pajak": kf.jumlah_pajak,
-              "jumlah": kf.jumlah,
-              "total": kf.total
-            })
-            biayaDetail += parseInt(kf.total)
-          })
-          // Mapping Komponen 
-            arrDetailPerjalanan.push({
-                "kode_kota_asal": p.kode_kota_asal,
-                "kode_kota_tujuan": p.kode_kota_tujuan,
-                "urut_tugas": p.urut_tugas,
-                "nama_petugas": p.nama_petugas,
-                "nama_bank": p.nama_bank,
-                "nomor_rekening": p.nomor_rekening,
-                "nomor_rekening_dipakai": p.nomor_rekening_dipakai,
-                "npwp": p.npwp,
-                "kode_provinsi_asal": p.kode_provinsi_asal,
-                "nama_kota_asal": p.nama_kota_asal,
-                "kode_provinsi_tujuan": p.kode_provinsi_tujuan,
-                "nama_kota_tujuan": p.nama_kota_tujuan,
-                "kode_unit_tujuan": p.kode_unit_tujuan,
-                "tahun": p.tahun,
-                "tanggal_pergi": p.tanggal_pergi,
-                "tanggal_pulang": p.tanggal_pulang,
-                "lama_perjalanan": p.lama_perjalanan,
-                "transport": p.transport,
-                "biaya": biayaDetail,
-                "komponen": komponenFilter
-            })
-            total_biaya += biayaDetail
-        })
-      arrPegawaiGroup.push({
-        "nip":pg.nip,
-        "nama_pegawai":pg.nama_petugas,
-        "total_biaya":total_biaya,
-        "nama_bank":pg.nama_bank,
-        "nomor_rekening":pg.nomor_rekening,
-        "nomor_rekening_dipakai":pg.nomor_rekening_dipakai,
-        "npwp":pg.npwp,
-        "detail_perjalanan":arrDetailPerjalanan
-      })
+    //table pegawai
+    const hsurat = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id},group:"nip"})
+    //table pegawai
+    const pegawai = await PetugasPerjadinBiaya.findAll({where:{id_surat_tugas:id}})
+    // console.log("test 2:" ,pegawai)
+    //table komponen
+    const komponen = await KomponenPerjadin_1.findAll({where:{id_surat_tugas:id},order:['kode_komponen_honor']})
+    console.log("test 3:" ,komponen)
+    //Data RKA Terpakai
+    const RKATerpakaiPerjadin = await SuratTugasRKAPerjadin.sum('jumlah_budget',
+    {where:{kode_rka:surtug[0].kode_rka,kode_periode:surtug[0].kode_periode, id_surat_tugas:{[Op.not]:id}}})
+  
+    console.log("test 4:" ,RKATerpakaiPerjadin)
+    //data pegawai sebelum dipilih skema
+    let tbpetugasPanutan = []
+    if(pegawai.length == 0){
+      // console.log("kesini dulu");
+      tbpetugasPanutan = await db.query(`SELECT * FROM t_petugas_dummy WHERE id_surat = ${id} GROUP BY id_surat,nip,id_tempat_tujuan`, {
+        type: QueryTypes.SELECT,
       })
     }
-    arrSurtugNested.push({
-      "id_surat_tugas": st.id_surat_tugas,
-      "kode_kegiatan_ut_detail": st.kode_kegiatan_ut_detail,
-      "kode_aktivitas_rkatu": st.kode_aktivitas_rkatu,
-      "kode_rka": st.kode_rka,
-      "kode_periode": st.kode_periode,
-      "nomor_surat_tugas": st.nomor_surat_tugas,
-      "tanggal_surat_tugas": st.tanggal_surat,
-      "tahun": st.tahun,
-      "tanggal_surat_tugas":st.tanggal_surat_tugas,
-      "kode_unit": st.kode_unit,
-      "kode_sub_unit": st.kode_sub_unit,
-      "ucr": st.ucr,
-      "uch": st.uch,
-      "udcr": st.udcr,
-      "udch": st.udch,
-      "status":st.status,
-      "skema":st.skema,
-      "dokumen":ArrdokumenPanutan,
-      "hsurat":arrPegawaiGroup
+  
+  console.log(req.headers.token_lama);
+  console.log(req.headers.token_baru);
+    //data RKA dari Ebudgeting
+    const RKADariEbudgeting = await axios
+      .get(
+        `${hostEbudgeting}${idAPI.ebudgeting.rka_bulan}/${surtug[0].kode_rka}/${surtug[0].kode_periode}`
+        // ,
+        // {
+        //   headers: {
+        //     id_user: req.headers.id_user,
+        //     kode_group: req.headers.kode_group,
+        //     token_lama: req.headers.token_lama,
+        //     token_baru: req.headers.token_baru,
+        //   },
+        // }
+      )
+      .then((data) => {
+        let dataReturn = data.data;
+        return dataReturn;
+      })
+      .catch((err) => {
+        let erro = {
+          message: err.message,
+          values: [],
+        };
+        return erro;
+      });
+  
+    //Join Surat Tugas dan Pegawai menggunakan map
+    //array surat tugas paling atas
+    let arrSurtugNested = []
+    if(dataPanutanget.length === 0 ) {
+      surtug.map((st)=>{
+        //array pegawai yang di group by 
+        let ArrdokumenPanutan = []
+        dokumenPanutan.map((dp)=>{
+          let filterPanutan = dokumenDariPanutan.filter((f)=> f.id_trx == dp.id_trx);
+          let link_file = ""
+          let status_tandatangan = ""
+          if(dp.aktif > 1){
+            status_tandatangan = "sudah di tandatangani"
+          }else{
+            status_tandatangan = "belum ditandatangani"
+          }
+          ArrdokumenPanutan.push({
+                  "id_trx": dp.id_trx,
+                  "katagori_surat": dp.katagori_surat,
+                  "id_surat_tugas": dp.id_surat_tugas,
+                  "kode_unit": dp.kode_unit,
+                  "tahun": dp.tahun,
+                  "jenis_surat": dp.jenis_surat,
+                  "id_nomor": dp.id_nomor,
+                  "nomor": dp.nomor,
+                  "tanggal": dp.tanggal,
+                  "link_file": dp.link_file,
+                  "status_tandatangan":status_tandatangan,
+                  "aktif": dp.aktif
+          })
+        })
+        let arrPegawaiGroup = []
+        if(hsurat.length > 0){
+          hsurat.map((pg)=>{
+            //array detail perjalanan pegawai
+            let arrDetailPerjalanan = []
+            let total_biaya = 0
+            let pegawaiFilter = pegawai.filter((p)=>p.nip === pg.nip);
+          
+            
+            pegawaiFilter.map((p)=>{
+  
+              let komponenFilter = komponen.filter((k)=>k.nip == p.nip && k.kode_kota_asal == p.kode_kota_asal)
+              let arrKomponen = []
+              let biayaDetail = 0
+              komponenFilter.map((kf)=>{
+                arrKomponen.push({
+                  "id_surat_tugas": kf.id_surat_tugas,
+                  "nip": kf.nip,
+                  "kode_kota_asal": kf.kode_kota_asal,
+                  "kode_kota_tujuan": kf.kode_kota_tujuan,
+                  "urut_tugas": kf.urut_tugas,
+                  "kode_komponen_honor": kf.kode_komponen_honor,
+                  "keterangan_komponen": kf.keterangan_komponen,
+                  "kode_satuan": kf.kode_satuan,
+                  "biaya_satuan": kf.biaya_satuan,
+                  "pajak_persen": kf.pajak_persen,
+                  "jumlah_pajak": kf.jumlah_pajak,
+                  "jumlah": kf.jumlah,
+                  "total": kf.total
+                })
+                biayaDetail += parseInt(kf.total)
+              })
+              // Mapping Komponen 
+                arrDetailPerjalanan.push({
+                    "kode_kota_asal": p.kode_kota_asal,
+                    "kode_kota_tujuan": p.kode_kota_tujuan,
+                    "urut_tugas": p.urut_tugas,
+                    "nama_petugas": p.nama_petugas,
+                    "nama_bank": p.nama_bank,
+                    "nomor_rekening": p.nomor_rekening,
+                    "nomor_rekening_dipakai": p.nomor_rekening_dipakai,
+                    "npwp": p.npwp,
+                    "kode_provinsi_asal": p.kode_provinsi_asal,
+                    "nama_kota_asal": p.nama_kota_asal,
+                    "kode_provinsi_tujuan": p.kode_provinsi_tujuan,
+                    "nama_kota_tujuan": p.nama_kota_tujuan,
+                    "kode_unit_tujuan": p.kode_unit_tujuan,
+                    "tahun": p.tahun,
+                    "tanggal_pergi": p.tanggal_pergi,
+                    "tanggal_pulang": p.tanggal_pulang,
+                    "lama_perjalanan": p.lama_perjalanan,
+                    "transport": p.transport,
+                    "biaya": biayaDetail,
+                    "komponen": komponenFilter
+                })
+                total_biaya += biayaDetail
+            })
+          arrPegawaiGroup.push({
+            "nip":pg.nip,
+            "nama_pegawai":pg.nama_petugas,
+            "total_biaya":total_biaya,
+            "nama_bank":pg.nama_bank,
+            "nomor_rekening":pg.nomor_rekening,
+            "nomor_rekening_dipakai":pg.nomor_rekening_dipakai,
+            "npwp":pg.npwp,
+            "detail_perjalanan":arrDetailPerjalanan,
+          })
+          })
+        }
+        arrSurtugNested.push({
+          "id_surat_tugas": st.id_surat_tugas,
+          "kode_kegiatan_ut_detail": st.kode_kegiatan_ut_detail,
+          "kode_aktivitas_rkatu": st.kode_aktivitas_rkatu,
+          "kode_rka": st.kode_rka,
+          "kode_periode": st.kode_periode,
+          "nomor_surat_tugas": st.nomor_surat_tugas,
+          "tanggal_surat_tugas": st.tanggal_surat,
+          "tahun": st.tahun,
+          "tanggal_surat_tugas":st.tanggal_surat_tugas,
+          "kode_unit": st.kode_unit,
+          "kode_sub_unit": st.kode_sub_unit,
+          "ucr": st.ucr,
+          "uch": st.uch,
+          "udcr": st.udcr,
+          "udch": st.udch,
+          "status":st.status,
+          "skema":st.skema,
+          "dokumen":ArrdokumenPanutan,
+          "hsurat":arrPegawaiGroup
+        })
+        
+      })
+        //susun data untuk di passing ke body API
+    let dataOutput = [];
+    dataOutput.push({
+      "surtug": arrSurtugNested,
+      "RKADariEbudgeting": RKADariEbudgeting,
+      "RKATerpakaiPerjadin": RKATerpakaiPerjadin,
+      "petugasDummy": tbpetugasPanutan
     })
-    
-  })
-
-
-
-  //susun data untuk di passing ke body API
-  let dataOutput = [];
-  dataOutput.push({
-    "surtug": arrSurtugNested,
-    "RKADariEbudgeting": RKADariEbudgeting,
-    "RKATerpakaiPerjadin": RKATerpakaiPerjadin,
-    "petugasDummy": tbpetugasPanutan
-  })
-  //lemparan data
-  jsonFormat(res,"success","berhasil memuat data",dataOutput);
-  }catch(error){
-    next(error)
-  }
+    //lemparan data
+    jsonFormat(res,"success","berhasil memuat data",dataOutput);
+    }
+   
+    else {
+      surtug.map((st)=>{
+        //array pegawai yang di group by 
+        let ArrdokumenPanutan = []
+        dokumenPanutan.map((dp)=>{
+          let filterPanutan = dokumenDariPanutan.filter((f)=> f.id_trx == dp.id_trx);
+          let link_file = ""
+          let status_tandatangan = ""
+          if(dp.aktif > 1){
+            status_tandatangan = "sudah di tandatangani"
+          }else{
+            status_tandatangan = "belum ditandatangani"
+          }
+          ArrdokumenPanutan.push({
+                  "id_trx": dp.id_trx,
+                  "katagori_surat": dp.katagori_surat,
+                  "id_surat_tugas": dp.id_surat_tugas,
+                  "kode_unit": dp.kode_unit,
+                  "tahun": dp.tahun,
+                  "jenis_surat": dp.jenis_surat,
+                  "id_nomor": dp.id_nomor,
+                  "nomor": dp.nomor,
+                  "tanggal": dp.tanggal,
+                  "link_file": dp.link_file,
+                  "status_tandatangan":status_tandatangan,
+                  "aktif": dp.aktif
+          })
+        })
+        let arrPegawaiGroup = []
+        if(hsurat.length > 0){
+          hsurat.map((pg)=>{
+            //array detail perjalanan pegawai
+            let arrDetailPerjalanan = []
+            let total_biaya = 0
+            let pegawaiFilter = pegawai.filter((p)=>p.nip === pg.nip);
+            let cek_data = datapegawaiganti.filter(petugas => petugas.nip_petugas_diganti === pg.nip).map((a) => a)
+            console.log(cek_data[0].nip_petugas_pengganti)
+            pegawaiFilter.map((p)=>{
+  
+              let komponenFilter = komponen.filter((k)=>k.nip == p.nip && k.kode_kota_asal == p.kode_kota_asal)
+              let pegawaiFilter = datapegawaiganti.filter(petugas => petugas.nip_petugas_diganti === p.nip)
+              let arrKomponen = []
+              let biayaDetail = 0
+              komponenFilter.map((kf)=>{
+                arrKomponen.push({
+                  "id_surat_tugas": kf.id_surat_tugas,
+                  "nip": cek_data[0].nip_petugas_pengganti,
+                  "kode_kota_asal": kf.kode_kota_asal,
+                  "kode_kota_tujuan": kf.kode_kota_tujuan,
+                  "urut_tugas": kf.urut_tugas,
+                  "kode_komponen_honor": kf.kode_komponen_honor,
+                  "keterangan_komponen": kf.keterangan_komponen,
+                  "kode_satuan": kf.kode_satuan,
+                  "biaya_satuan": kf.biaya_satuan,
+                  "pajak_persen": kf.pajak_persen,
+                  "jumlah_pajak": kf.jumlah_pajak,
+                  "jumlah": kf.jumlah,
+                  "total": kf.total
+                })
+                biayaDetail += parseInt(kf.total)
+              })
+              // Mapping Komponen 
+                arrDetailPerjalanan.push({
+                    "kode_kota_asal": p.kode_kota_asal,
+                    "kode_kota_tujuan": p.kode_kota_tujuan,
+                    "urut_tugas": p.urut_tugas,
+                    "nama_petugas": cek_data[0].nama_petugas_pengganti,
+                    "nama_bank": p.nama_bank,
+                    "nomor_rekening": p.nomor_rekening,
+                    "nomor_rekening_dipakai": p.nomor_rekening_dipakai,
+                    "npwp": p.npwp,
+                    "kode_provinsi_asal": p.kode_provinsi_asal,
+                    "nama_kota_asal": p.nama_kota_asal,
+                    "kode_provinsi_tujuan": p.kode_provinsi_tujuan,
+                    "nama_kota_tujuan": p.nama_kota_tujuan,
+                    "kode_unit_tujuan": p.kode_unit_tujuan,
+                    "tahun": p.tahun,
+                    "tanggal_pergi": p.tanggal_pergi,
+                    "tanggal_pulang": p.tanggal_pulang,
+                    "lama_perjalanan": p.lama_perjalanan,
+                    "transport": p.transport,
+                    "biaya": biayaDetail,
+                    "komponen": komponenFilter
+                })
+                total_biaya += biayaDetail
+            })
+          arrPegawaiGroup.push({
+            "nip":cek_data[0].nip_petugas_pengganti,
+            "nama_pegawai":cek_data[0].nama_petugas_pengganti,
+            "total_biaya":total_biaya,
+            "nama_bank":pg.nama_bank,
+            "nomor_rekening":pg.nomor_rekening,
+            "nomor_rekening_dipakai":pg.nomor_rekening_dipakai,
+            "npwp":pg.npwp,
+            "detail_perjalanan":arrDetailPerjalanan,
+          })
+          })
+        }
+        arrSurtugNested.push({
+          "id_surat_tugas": st.id_surat_tugas,
+          "kode_kegiatan_ut_detail": st.kode_kegiatan_ut_detail,
+          "kode_aktivitas_rkatu": st.kode_aktivitas_rkatu,
+          "kode_rka": st.kode_rka,
+          "kode_periode": st.kode_periode,
+          "nomor_surat_tugas": st.nomor_surat_tugas,
+          "tanggal_surat_tugas": st.tanggal_surat,
+          "tahun": st.tahun,
+          "tanggal_surat_tugas":st.tanggal_surat_tugas,
+          "kode_unit": st.kode_unit,
+          "kode_sub_unit": st.kode_sub_unit,
+          "ucr": st.ucr,
+          "uch": st.uch,
+          "udcr": st.udcr,
+          "udch": st.udch,
+          "status":st.status,
+          "skema":st.skema,
+          "dokumen":ArrdokumenPanutan,
+          "hsurat":arrPegawaiGroup
+        })
+        
+      })
+       //susun data untuk di passing ke body API
+    let dataOutput = [];
+    dataOutput.push({
+      "path" : "https://panutan.ut.ac.id/" +  APIPengganti.data?.path,
+      "surtug": arrSurtugNested,
+      "RKADariEbudgeting": RKADariEbudgeting,
+      "RKATerpakaiPerjadin": RKATerpakaiPerjadin,
+      "petugasDummy": tbpetugasPanutan
+    })
+    //lemparan data
+    jsonFormat(res,"success","berhasil memuat data",dataOutput);
+    }
+  
+  
+   
+    }catch(error){
+      next(error)
+    }
+  
   
 }
 
@@ -1204,6 +1584,8 @@ exports.createNew = async (req, res, next) => {
         tanggal_surat_tugas: req.body.tanggal_surat_tugas,
         kode_sub_unit:req.body.kode_sub_unit,
         kode_unit: req.body.kode_unit,
+        data_pengusulan:req.body.data_pengusulan,
+        path_dokumen:req.body.dokumen,
         kode_skema:0,
         kode_status:2,
         tahun: req.body.tahun,

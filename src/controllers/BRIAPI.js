@@ -8,7 +8,6 @@ const fs = require('fs');
 const https = require('https');
 const path = require("path");
 const request = require('request');
-const FormData = require('form-data');
 const qs = require('qs');
 const TokenBRI = require('../models/token_BRI')
 const TrxResponBank = require("../models/trx_respon_bank");

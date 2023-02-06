@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { getAll,pilihskema,getByid,nestedbaru,updatekomponen,updatetransport,updateSkemaDetailPerjalanan,pilihSkemanew,updatetransportnew } = require("../controllers/ref_skema_perjadin");
+const { getAll,pilihskema,getByid,nestedbaru,updatekomponen,updatetransport,updateSkemaDetailPerjalanan,pilihSkemanew,
+    updatetransportnew,editKomponen,listKomponen,tambahKomponen,hapusKomponen } = require("../controllers/ref_skema_perjadin");
 const skemaPerjadinScema = require("../request/ref_skema_perjadin")
 const {verifyToken,pengusulToken} = require("../middleware/auth")
 const { validationResult } = require("express-validator");
@@ -16,5 +17,9 @@ router.put("/updatekomponen",updatekomponen);
 router.put("/updatetransport",skemaPerjadinScema.transport,validate.process,updatetransport);
 router.put("/update-transport-new",skemaPerjadinScema.transportnew,validate.process,updatetransportnew);
 router.put("/update-skema-perjalanan",skemaPerjadinScema.updateSkemaPerorang,validate.process,updateSkemaDetailPerjalanan)
+router.put("/update-komponen/:kode_trx", editKomponen);
+router.get("/list-komponen", listKomponen);
+router.post("/tambah-komponen",tambahKomponen)
+router.delete("/hapus-komponen:kode_trx",hapusKomponen)
 
 module.exports = router;

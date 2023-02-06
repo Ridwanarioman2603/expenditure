@@ -13,7 +13,7 @@ const trigerTTE = async(req,res,next)=>{
     console.log(response.data.data[0].path_final_dok)
     if(response.data.data[0].path_final_dok){
         let link_file = `${hostProdevPanutannew}/${response.data.data[0].path_final_dok}`
-        await DokumenModel.update({aktif:2,link_file:link_file},{where:{id_trx:id_transaksi}})
+         DokumenModel.update({aktif:2,link_file:link_file},{where:{id_trx:id_transaksi}})
     }
     jsonFormat(res,"success","berhasil",[])
     }catch(err){

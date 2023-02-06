@@ -1,7 +1,8 @@
 // define error
+const log4js = require("log4js");
 module.exports = (error, req, res, next) => {
     const code = error.statusCode || 500;
-  
+   
     let data = {
       code: code,
       status: "failed",
@@ -19,7 +20,7 @@ module.exports = (error, req, res, next) => {
         ],
       };
     }
-    
+    log4js.getLogger().debug(error);
     res.statusCode = 200
     res.json(data);
   };

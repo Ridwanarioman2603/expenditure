@@ -15,7 +15,6 @@ const fs = require('fs');
 const puppeteer  = require("puppeteer");
 const path = require("path");
 const https = require('https');
-const FormData = require('form-data');
 const hostProdevPanutan = process.env.hostProdevPanutan
 const hostProdevPanutannew = process.env.hostProdevPanutannew
 const hostPevita = process.env.hostPevita
@@ -336,49 +335,10 @@ let arrresponpanutan = [];
               })
               await browser.close();
             // kirim ke panutan
-              let pathpdf = path.join(__dirname,"../public/perjadin/expsipppper_"+randomchar+".pdf");
-              let fileexist = fs.existsSync(pathpdf);
-              console.log("file exist:", fileexist);
-              let pdfupload = fs.createReadStream(pathpdf);
-            data = new FormData();
-            data.append('email', 'expenditure@ecampus.ut.ac.id');
-            data.append('password', 'password123');
-            data.append('id_aplikasi', '4');
-            data.append('id_trx', id_trx);
-            data.append('sifat_surat', sifat_surat);
-            data.append('nomor_surat', nomor_surat);
-            data.append('perihal', perihal);
-            data.append('tanggal_surat', tanggal_surat);
-            data.append('nip_pembuat',nip_pembuat);
-            nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
-            data.append('email_penandatangan', email_penandatangan);
-            data.append('pdf', pdfupload);
-
-            var config = {
-              method: 'post',
-              url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
-              headers: { 
-                 Authorization: `Bearer ${token}`, 
-                
-                ...data.getHeaders()
-              },
-              data : data
-            };
+            let filename = 'expsipppbj_spm_'+randomchar+'.pdf'
+            let pathpdf = path.join(__dirname,"../public/barjas/",'/expsipppbj_spm_'+randomchar+'.pdf');
+          generate.kirimpanutan(pathpdf,filename,sifat_surat,id_trx,nomor_surat,perihal,tanggal_surat,nip_pembuat,nip_penandatangan,req.body.tahun)
             
-            let kirimpanutan = await axios(config).then(function (response) {              
-             arrresponpanutan.push(response) 
-             arrresponpanutan.push({"berhasil":"berhasil 123"}) 
-             return response.data
-            }).catch(function (error) {
-             arrresponpanutan.push({"gagal":"gagal"})
-            });
-            fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
-            let link_file = generate.linkfilepanutan(req.body.tahun,kirimpanutan.id,kirimpanutan.dokumen)
-            await dokumenKirimPanutan.update({link_file:link_file,id_file:kirimpanutan.id},{where:{
-              id_trx:id_trx
-            }}).catch(function (error){
-                arrresponpanutan.push('error input database')
-            })  
           }
             
             
@@ -390,3 +350,143 @@ let arrresponpanutan = [];
 
   
 }
+
+// exports.renderdankirim = async (req,res,next) => {
+//   try{
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return jsonFormat(res, "failed", "validation failede", errors);
+//   }
+
+//   let dokumen = req.body.dokumen
+   
+//   let datadokument = {
+//     'dokumen':req.body.dokumen,
+//     'scriptHtml':req.body.scriptHtml,
+//     'id_jenis_surat':req.body.id_jenis_surat,
+//     'id_jenis_nd':req.body.id_jenis_nd,
+//     'perihal':req.body.perihal,
+//     'id_klasifikasi':req.body.id_klasifikasi , 
+//     'id_trx':req.body.id_trx,
+//     'sifat_surat':req.body.sifat_surat,
+//     'id_nomor':req.body.id_nomor,
+//     'jenis_surat':req.body.jenis_surat,
+//     'nomor_surat':req.body.nomor_surat,
+//     'perihal':req.body.perihal,
+//     'tanggal_surat':req.body.tanggal_surat,
+//     'nip_penandatangan':req.body.nip_penandatangan,
+//     'email_penandatangan':req.body.email_penandatangan,
+//   }
+
+
+//   const gettoken = await axios .post(`${hostPevita}${idAPI.pevita.login}`).catch(function(error){
+//     jsonFormat(res, "failed", error.message, []);
+//   });
+//   const token = gettoken.data["access_token"];
+ 
+// let scriptHtml,id_jenis_surat,id_jenis_nd,perihal,id_klasifikasi,id_trx,sifat_surat,nomor_surat,tanggal_surat,nip_penandatangan,email_penandatangan,pdf,
+// browser,page,buffer,randomchar,charactersLength,folderpath, data;
+// let characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+// console.log("dokumen length:",dokumen.length)
+// let arrresponpanutan = [];
+//           for(let i =0; i<dokumen.length;i++){
+//             scriptHtml = datadokument.dokumen[i].scriptHtml
+//            id_jenis_surat = datadokument.dokumen[i].id_jenis_surat
+//            id_jenis_nd = datadokument.dokumen[i].id_jenis_nd
+//            perihal = datadokument.dokumen[i].perihal
+//            id_klasifikasi = datadokument.dokumen[i].id_klasifikasi
+//            id_trx = datadokument.dokumen[i].id_trx
+//            sifat_surat = datadokument.dokumen[i].sifat_surat
+//            id_nomor = datadokument.dokumen[i].id_nomor
+//            nomor_surat = datadokument.dokumen[i].nomor_surat
+//            tanggal_surat = datadokument.dokumen[i].tanggal_surat
+//            nip_penandatangan = datadokument.dokumen[i].nip_penandatangan
+//            email_penandatangan = datadokument.dokumen[i].email_penandatangan
+//            nip_pembuat = datadokument.dokumen[i].nip_pembuat
+//            //render pdf
+//            arrresponpanutan.push(datadokument.dokumen[i])
+//              pdf =(
+//               scriptHtml
+//             );
+//            browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox","--use-gl=egl"],headless : true})
+//            page = await browser.newPage()
+//           await page.setContent(pdf)
+//           randomchar = '';
+//               charactersLength = characters.length;
+//               for ( let i = 0; i < 15; i++ ) {
+//                   randomchar += characters.charAt(Math.floor(Math.random() * charactersLength));
+//               }
+//               folderpath = "./src/public/perjadin"
+//               fs.mkdir(folderpath,function(e){
+//             });
+
+//           buffer = await page.pdf({
+//                   path : folderpath+'/expsipppper_'+randomchar+'.pdf',
+//                 // paperWidth:8.5,
+//                 // paperHeight:13,
+//                 format: 'Legal',
+//                   printBackground: true,
+//                   margin: {
+//                       left: '0px',
+//                       top: '0px',
+//                       right: '0px',
+//                       bottom: '0px'
+//                   }
+//               })
+//               await browser.close();
+//             // kirim ke panutan
+            
+//               let pathpdf = path.join(__dirname,"../public/perjadin/expsipppper_"+randomchar+".pdf");
+//               let fileexist = fs.existsSync(pathpdf);
+//               console.log("file exist:", fileexist);
+//               let pdfupload = fs.createReadStream(pathpdf);
+//             data = new FormData();
+//             data.append('email', 'expenditure@ecampus.ut.ac.id');
+//             data.append('password', 'password123');
+//             data.append('id_aplikasi', '4');
+//             data.append('id_trx', id_trx);
+//             data.append('sifat_surat', sifat_surat);
+//             data.append('nomor_surat', nomor_surat);
+//             data.append('perihal', perihal);
+//             data.append('tanggal_surat', tanggal_surat);
+//             data.append('nip_pembuat',nip_pembuat);
+//             nip_penandatangan.forEach((item) => data.append("nip_penandatangan[]", item))
+//             data.append('email_penandatangan', email_penandatangan);
+//             data.append('pdf', pdfupload);
+
+//             var config = {
+//               method: 'post',
+//               url: `${hostProdevPanutannew}${idAPI.panutan.send_data}`,
+//               headers: { 
+//                  Authorization: `Bearer ${token}`, 
+                
+//                 ...data.getHeaders()
+//               },
+//               data : data
+//             };
+            
+//             let kirimpanutan = await axios(config).then(function (response) {              
+//              arrresponpanutan.push(response) 
+//              arrresponpanutan.push({"berhasil":"berhasil 123"}) 
+//              return response.data
+//             }).catch(function (error) {
+//              arrresponpanutan.push({"gagal":"gagal"})
+//             });
+//             fs.unlink(pathpdf, (err) => {console.log("unlink error", err);})
+//             let link_file = generate.linkfilepanutan(req.body.tahun,kirimpanutan.id,kirimpanutan.dokumen)
+//             await dokumenKirimPanutan.update({link_file:link_file,id_file:kirimpanutan.id},{where:{
+//               id_trx:id_trx
+//             }}).catch(function (error){
+//                 arrresponpanutan.push('error input database')
+//             })  
+//           }
+            
+            
+
+
+//               jsonFormat(res, "success", "berhasil mengajukan dokumen", datadokument);
+//             }
+//             catch(error){jsonFormat(res, "failed", error.message, error);}
+
+  
+// }

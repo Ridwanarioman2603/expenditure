@@ -32,6 +32,7 @@ exports.store = [
     check("kode_status").notEmpty().withMessage("kode_status harus ada."),
     check("jenis_honor").notEmpty().withMessage("jenis_honor harus ada."),
     check("nama_honor").notEmpty().withMessage("nama_honor harus ada."),
+    // check("data_pengusulan").notEmpty().isIn(['DATA-MANISKU','DATA-EXPENDITURE']).withMessage("data_pengusulan harus di isi. ['DATA-MANISKU'|'DATA-EXPENDITURE']"),
     check("ucr").notEmpty().withMessage("ucr harus di isi."),
   ];
 
@@ -312,49 +313,7 @@ exports.storeHonorariumPetugasPanutan = [
 ]
 
 
-
-
-// kode_trx_surat:trx_surat,
-//     kode_trx_pajak:pajak.kode_trx,
-//     kode_trx_sbm:sbm.kode_trx,
-//     kode_klasifikasi:body.kode_klasifikasi,
-//     nip:data.nip,
-//     kode_surat:body.kode_surat+`-honorarium`,
-//     tahun:body.tahun,
-//     katagori:data.katagori,
-//     tugas:data.tugas,
-//     jenjang:data.jenjang,
-//     gol:data.gol,
-//     eselon:data.eselon,
-//     jabatan:data.jabatan,
-//     nama:data.nama,
-//     email:data.email,
-//     npwp:data.npwp,
-//     satuan_1:data.satuan_1,
-//     volume_1:data.volume_1,
-//     satuan_2:data.satuan_2,
-//     volume_2:data.volume_2,
-//     jumlah_biaya:jumlah_biaya,
-//     pajak:biaya_pajak,
-//     jumlah_diterima:jumlah_diterima,
-//     kode_bank:data.kode_bank,
-//     nama_bank:data.nama_bank,
-//     no_rekening:data.no_rekening,
-//     atas_nama_rekening:data.atas_nama_rekening,
-//     keterangan_1:data?.keterangan_1,
-//     keterangan_2:data?.keterangan_2,
-//     keterangan_3:data?.keterangan_3,
-//     keterangan_4:data?.keterangan_4,
-//     keterangan_5:data?.keterangan_5,
-//     keterangan_6:data?.keterangan_6,
-//     keterangan_7:data?.keterangan_7,
-//     keterangan_8:data?.keterangan_8,
-//     keterangan_9:data?.keterangan_9,
-//     keterangan_10:data?.keterangan_10,
-//     keterangan_11:data?.keterangan_11,
-//     keterangan_12:data?.keterangan_12,
-//     keterangan_13:data?.keterangan_13,
-//     keterangan_14:data?.keterangan_14,
-//     keterangan_15:data?.keterangan_15,
-//     kode_status:0,
-//     ucr:body.ucr
+exports.updateNominalPetugasHonor = [
+  check("kode_trx").exists().withMessage("params kode_trx harus di isi."),
+  check("satuan_biaya").notEmpty().isInt().withMessage("satuan biaya tidak boleh kosong dan diisi oleh angka")
+]

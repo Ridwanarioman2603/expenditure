@@ -9,7 +9,6 @@ const fs = require('fs');
 const https = require('https');
 const path = require("path");
 const request = require('request');
-const FormData = require('form-data');
 const hostProdevPanutannew = process.env.hostProdevPanutannew
 
 exports.getCharteBudgetingbyRKA = async (req,res,next) => {

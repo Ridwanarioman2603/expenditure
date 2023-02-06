@@ -15,6 +15,8 @@ const hostSiakunBe1 = process.env.hostSiakunBe1
 const hostutpay = process.env.hostutpay
 const idAPI = require("../lang/id-api.json")
 const { getSignature } = require("../middleware/headersUtBank");
+const log4js = require("log4js");
+
 
 
 exports.transferExpenditureController = async (req,res,next) =>{
@@ -77,6 +79,7 @@ exports.transferExpenditureController = async (req,res,next) =>{
         })
     }
     catch(err){
+        log4js.getLogger.debug(err);
         next(err)
     }
 }
@@ -104,7 +107,8 @@ exports.getlisttransferbyStatus = (req,res,next) =>{
         if(!err.statusCode) {
             err.statusCode = 500;
         }
-        return jsonFormat(res, "failedsetstatus", err,[]);
+        log4js.getLogger.debug(err);
+        return jsonFormat(res, "failed", err,[]);
     })
 }
 exports.getlisttransferbykodebank = (req,res,next) =>{
@@ -246,7 +250,6 @@ exports.transfer = async(req,res,next) =>{
     //Header UT-Bank
     try{
     const header = getSignature(req.method, "/bri/v1/transfer");
-    console.log("header : ", header);
     const body = req.body
     const transaksiData = body.transferData
     let dataResponse = []
@@ -291,8 +294,10 @@ exports.transfer = async(req,res,next) =>{
     console.log(dataTampungBRI, header);
     let ResponseBRI = await storetfBRI(dataTampungBRI, header)
     console.log("Response BRI",ResponseBRI)
-        ResponseBRI.data.map((a)=>{
-            dataResponse.push(a)
+        ResponseBRI.map((a)=>{
+            if(a.data){
+                dataResponse.push(a)
+            }
         })
 
     }
@@ -303,10 +308,7 @@ exports.transfer = async(req,res,next) =>{
        
         let dataResponse2 = dataResponse.filter((p)=>p.description == `${body.tahun}-${transaksi.nama_petugas}-${transaksi.kode_surat}-${transaksi.kode_sub_surat}`)
        
-        let kondisi = dataResponse.filter((p)=>p.description == `${body.tahun}-${transaksi.nama_petugas}-${transaksi.kode_surat}-${transaksi.kode_sub_surat}` && p.status == 'SUCCESS')
-        console.log("data kondisi:",kondisi);
-        console.log("data response:",dataResponse);
-        
+        let kondisi = dataResponse.filter((p)=>p.description == `${body.tahun}-${transaksi.nama_petugas}-${transaksi.kode_surat}-${transaksi.kode_sub_surat}` && p.status == 'SUCCESS')        
         let dataSiakun = await data_siakun(transaksi,"a",body)
         let responseSiakun = await storeSiakun(dataSiakun)
         
@@ -314,7 +316,6 @@ exports.transfer = async(req,res,next) =>{
             updateNoReferralWaitTF(transaksi,kondisi[0],"6")
             updatePegawai(transaksi,kondisi[0],1)
         }else{
-            console.log("kondisi data response 2 : ", dataResponse2[0]);
             updateNoReferralWaitTF(transaksi,dataResponse2[0],"5")
         }
     }
@@ -323,10 +324,26 @@ exports.transfer = async(req,res,next) =>{
     return jsonFormat(res,'success',"Berhasil Memperoses",dataResponse);
 
     }catch(err){
-        next(err)
+         log4js.getLogger.debug("transfer: :" + err);
+        jsonFormat(res,'failed',err?.message,[])
     }
 
 }
+
+exports.transferNew = (req,res,next) =>{
+    const body = req.body
+    const transferData = body.transferData
+    waitingTransfer.findAll({where:{nomor_sptd:req.body.nomor_sptd}}).then((waitData)=>{
+        transferData.map((td)=>{
+            let tdresponse
+            if(!!td.NoReferral == false){
+                
+            }
+        })
+        return jsonFormat(res,'success','berhasil membuat data',transferData)       
+    }).catch((err)=>{next(err)})
+}
+
 
 
 const data_siakun = (transaksi,kondisi,body) =>{
@@ -391,12 +408,12 @@ const data_ke_bank = (transaksi,data) =>{
 }
 
 
-const storetfBRI = (data,header)=>{
+const storetfBRI = async(data,header)=>{
         const dataObject = {
             dataTransfer:data
         }
         console.log("dataobj : ", dataObject);
-        let response =  axios.post(`${hostutpay}${idAPI.utpay.transfer}`,dataObject,{headers: header})
+        let response =  await axios.post(`${hostutpay}${idAPI.utpay.transfer}`,dataObject,{headers: header})
         console.log("dari UT PAY",response.data)
         return response.data
 }

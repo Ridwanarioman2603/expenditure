@@ -12,7 +12,7 @@ const PetugasPerjadinBiaya = db.define(
       allowNull: false,
     },
     nip: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(25),
       primaryKey: true,
       allowNull: false,
     },
@@ -146,6 +146,14 @@ const PetugasPerjadinBiaya = db.define(
         type: DataTypes.STRING(50),
         allowNull: true,
         },
+        dapat_diedit:{
+          type: DataTypes.ENUM('BISA','TIDAK_BISA'),
+          allowNull: true,
+        },
+        dapat_melebihi:{
+          type: DataTypes.ENUM('BISA','TIDAK_BISA'),
+          allowNull: true,
+        }
 
   
   },

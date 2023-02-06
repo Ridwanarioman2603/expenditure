@@ -771,11 +771,13 @@ exports.pilihSkemanewII = async (req, res, next) => {
           let finaleReturn = [];
           let jenisTransport = "Tidak Ditemukan";
           let dataReturn = [];
-          let ketPerjalanan = 0;
+          let ketPerjalanan,ketTaksi = 0;
           if (data != null) {
             if (petugas[i].keterangan == "Pulang-Pergi") {
               ketPerjalanan = 1;
+              ketTaksi = 2;
             } else {
+              ketTaksi = 1;
               ketPerjalanan = 0.5;
             }
             if (data.udara > 0) {
@@ -848,8 +850,8 @@ exports.pilihSkemanewII = async (req, res, next) => {
               kode_komponen_perjadin: komponen[j].kode_komponen_perjadin,
               tahun: tahun,
               keterangan: "Biaya Taksi Asal",
-              biaya_satuan: data.biaya,
-              jumlah_satuan: 1,
+              biaya_satuan: data.biaya*ketTaksi,
+              jumlah_satuan: ketTaksi,
               biaya: data.biaya,
               ucr: req.body.ucr,
             };
@@ -880,8 +882,8 @@ exports.pilihSkemanewII = async (req, res, next) => {
               kode_komponen_perjadin: komponen[j].kode_komponen_perjadin,
               tahun: tahun,
               keterangan: "Biaya Taksi Tujuan",
-              biaya_satuan: data.biaya,
-              jumlah_satuan: 1,
+              biaya_satuan: data.biaya*ketTaksi,
+              jumlah_satuan: ketTaksi,
               biaya: data.biaya,
               ucr: req.body.ucr,
             };
@@ -1236,70 +1238,97 @@ exports.pilihSkemanew = async(req,res,next) =>{
       
       //STEP 5.1 jika komponen transport muncul
       if(komponen[k].kode_komponen_perjadin ==='1'){
-        komponenInsert = await SbmTransport.findOne({where:{kode_unit:surat.kode_unit,asal:petugas[p].kode_kota_asal,tujuan:petugas[p].kode_kota_tujuan}}).then((kt)=>{
-          
-          if(kt===null){
-            return{
-              "id_surat_tugas":kode_surat,
-              "urut_tugas":1,
-              "nip":petugas[p].nip,
-              "kode_komponen_honor":komponen[k].kode_komponen_perjadin,
-              "kode_kota_asal":petugas[p].kode_kota_asal,
-              "kode_kota_tujuan":petugas[p].kode_kota_tujuan,
-              "keterangan_komponen":"Biaya dari pokjar asal menuju pokjar tujuan belum ada di dalam sbm",
-              "kode_satuan":"-",
-              "biaya_satuan":0,
-              "pajak_persen":0,
-              "jumlah_pajak":0,
-              "jumlah":0,
-              "total":0,
-              "tahun":petugas[p].tahun
-            }
-          }
-          else{
-            let biayat,keterangant,kode_satuan,kalijumlah
-            if(kt.udara > 0){biayat = kt.udara;keterangant="Transpor (Udara)";}else if(kt.darat > 0 ){biayat = kt.darat;keterangant="Transpor (Darat)";} 
-            else if(kt.laut > 0 ){biayat = kt.laut;keterangant="Transpor (Laut)";}else{biayat = 0;keterangant="Transport (Belum Terdapat Biaya)";}
-            if(petugas[p].keterangan_dinas === "PP"){kode_satuan = "PP";kalijumlah=1}else{kode_satuan = "P";kalijumlah=0.5;}
-            return{
-              "id_surat_tugas":kode_surat,
-              "urut_tugas":1,
-              "nip":petugas[p].nip,
-              "kode_komponen_honor":komponen[k].kode_komponen_perjadin,
-              "kode_kota_asal":petugas[p].kode_kota_asal,
-              "kode_kota_tujuan":petugas[p].kode_kota_tujuan,
-              "keterangan_komponen":keterangant,
-              "kode_satuan":kode_satuan,
-              "biaya_satuan":biayat*kalijumlah,
-              "pajak_persen":0,
-              "jumlah_pajak":0,
-              "jumlah":1,
-              "total":biayat*kalijumlah*1,
-              "tahun":petugas[p].tahun
-            }
-          }
-
-        }).catch((err)=>{
-          return{
-            "id_surat_tugas":kode_surat,
-            "urut_tugas":1,
-            "nip":petugas[p].nip,
-            "kode_komponen_honor":komponen[k].kode_komponen_perjadin,
-            "kode_kota_asal":petugas[p].kode_kota_asal,
-            "kode_kota_tujuan":petugas[p].kode_kota_tujuan,
-            "keterangan_komponen":"data SBM Transport tidak bisa diakses",
-            "kode_satuan":"-",
-            "biaya_satuan":0,
-            "pajak_persen":0,
-            "jumlah_pajak":0,
-            "jumlah":0,
-            "total":0,
-            "tahun":petugas[p].tahun
-          }
+        komponenInsert = await SbmTransport.findOne({
+          where: {
+            kode_unit: surat.kode_unit,
+            asal: petugas[p].kode_kota_asal,
+            tujuan: petugas[p].kode_kota_tujuan,
+            keterangan: "terverifikasi admin",
+          },
         })
+          .then((kt) => {
+            if (kt === null) {
+              return {
+                id_surat_tugas: kode_surat,
+                urut_tugas: 1,
+                nip: petugas[p].nip,
+                kode_komponen_honor: komponen[k].kode_komponen_perjadin,
+                kode_kota_asal: petugas[p].kode_kota_asal,
+                kode_kota_tujuan: petugas[p].kode_kota_tujuan,
+                keterangan_komponen:
+                  "Biaya dari pokjar asal menuju pokjar tujuan belum ada di dalam sbm",
+                kode_satuan: "-",
+                biaya_satuan: 0,
+                pajak_persen: 0,
+                jumlah_pajak: 0,
+                jumlah: 0,
+                total: 0,
+                tahun: petugas[p].tahun,
+              };
+            } else {
+              let biayat, keterangant, kode_satuan, kalijumlah;
+              if (kt.udara > 0) {
+                biayat = kt.udara;
+                keterangant = "Transpor (Udara)";
+              } else if (kt.darat > 0) {
+                biayat = kt.darat;
+                keterangant = "Transpor (Darat)";
+              } else if (kt.laut > 0) {
+                biayat = kt.laut;
+                keterangant = "Transpor (Laut)";
+              } else {
+                biayat = 0;
+                keterangant = "Transport (Belum Terdapat Biaya)";
+              }
+              if (petugas[p].keterangan_dinas === "PP") {
+                kode_satuan = "PP";
+                kalijumlah = 1;
+              } else {
+                kode_satuan = "P";
+                kalijumlah = 0.5;
+              }
+              return {
+                id_surat_tugas: kode_surat,
+                urut_tugas: 1,
+                nip: petugas[p].nip,
+                kode_komponen_honor: komponen[k].kode_komponen_perjadin,
+                kode_kota_asal: petugas[p].kode_kota_asal,
+                kode_kota_tujuan: petugas[p].kode_kota_tujuan,
+                keterangan_komponen: keterangant,
+                kode_satuan: kode_satuan,
+                biaya_satuan: biayat * kalijumlah,
+                satuan_sbm: biayat * kalijumlah,
+                pajak_persen: 0,
+                jumlah_pajak: 0,
+                jumlah: 1,
+                total: biayat * kalijumlah * 1,
+                tahun: petugas[p].tahun,
+              };
+            }
+          })
+          .catch((err) => {
+            return {
+              id_surat_tugas: kode_surat,
+              urut_tugas: 1,
+              nip: petugas[p].nip,
+              kode_komponen_honor: komponen[k].kode_komponen_perjadin,
+              kode_kota_asal: petugas[p].kode_kota_asal,
+              kode_kota_tujuan: petugas[p].kode_kota_tujuan,
+              keterangan_komponen: "data SBM Transport tidak bisa diakses",
+              kode_satuan: "-",
+              biaya_satuan: 0,
+              pajak_persen: 0,
+              jumlah_pajak: 0,
+              jumlah: 0,
+              total: 0,
+              tahun: petugas[p].tahun,
+            };
+          });
 
         // Step 5.1.1 kondisi untuk menentukan ada taksi atau tidak
-        if(komponenInsert.keterangan_komponen == 'Transpor (Udara)' ){taksi = 1;transportPetugas = "Udara" }else if(komponenInsert.keterangan_komponen == 'Transpor (Darat)'){transportPetugas = "Darat" }
+        
+        if(komponenInsert.keterangan_komponen == 'Transpor (Udara)' ){taksi = 1;transportPetugas = "Udara" 
+         }else if(komponenInsert.keterangan_komponen == 'Transpor (Darat)'){transportPetugas = "Darat" }
         else if(komponenInsert.keterangan_komponen == 'Transpor (Laut)'){transportPetugas = "Laut" }
 
          biayaPetugas += komponenInsert.total
@@ -1307,7 +1336,8 @@ exports.pilihSkemanew = async(req,res,next) =>{
 
       //STEP 5.2 jika komponen taksi muncul jika transport adalah udara
       else if((komponen[k].kode_komponen_perjadin ==='2.1' && taksi == 1) || (komponen[k].kode_komponen_perjadin ==='2.2' && taksi == 1)){
-        let kodeprovinsi,urut_tugas_taksi
+        let kodeprovinsi,urut_tugas_taksi, ketTaksi
+        if(petugas[p].keterangan_dinas === "PP"){ketTaksi = 2}else{ketTaksi = 1}
         if(komponen[k].kode_komponen_perjadin ==='2.1'){kodeprovinsi = petugas[p].kode_provinsi_asal;urut_tugas_taksi = 2}else{kodeprovinsi = petugas[p].kode_provinsi_tujuan;urut_tugas_taksi=3}
         
         komponenInsert = await SbmTaksi.findOne({where:{kode_provinsi:kodeprovinsi}}).then((kt)=>{
@@ -1322,9 +1352,10 @@ exports.pilihSkemanew = async(req,res,next) =>{
               "keterangan_komponen":"Biaya Taksi pada provinsi ini tidak ada segera hubungi bagian SBM",
               "kode_satuan":komponen[k].komponen1.kode_satuan,
               "biaya_satuan":0,
+              "satuan_sbm":0,
               "pajak_persen":0,
               "jumlah_pajak":0,
-              "jumlah":1,
+              "jumlah":ketTaksi,
               "total":0,
               "tahun":petugas[p].tahun
             }
@@ -1339,10 +1370,11 @@ exports.pilihSkemanew = async(req,res,next) =>{
               "keterangan_komponen":komponen[k].komponen1.nama_komponen_perjadin,
               "kode_satuan":komponen[k].komponen1.kode_satuan,
               "biaya_satuan":kt.biaya,
+              "satuan_sbm":kt.biaya,
               "pajak_persen":0,
               "jumlah_pajak":0,
-              "jumlah":1,
-              "total":kt.biaya*1,
+              "jumlah":ketTaksi,
+              "total":kt.biaya*ketTaksi,
               "tahun":petugas[p].tahun
             }
           }
@@ -1359,7 +1391,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
             "biaya_satuan":0,
             "pajak_persen":0,
             "jumlah_pajak":0,
-            "jumlah":1,
+            "jumlah":ketTaksi,
             "total":0,
             "tahun":petugas[p].tahun
           }
@@ -1404,6 +1436,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
               "keterangan_komponen":komponen[k].komponen1.nama_komponen_perjadin,
               "kode_satuan":komponen[k].komponen1.kode_satuan,
               "biaya_satuan":biayap,
+              "satuan_sbm":biayap,
               "pajak_persen":0,
               "jumlah_pajak":0,
               "jumlah":petugas[p].lama_perjalanan-1,
@@ -1422,6 +1455,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
             "keterangan_komponen":"data SBM Penginapan tidak bisa diakses",
             "kode_satuan":komponen[k].komponen1.kode_satuan,
             "biaya_satuan":0,
+            "satuan_sbm":0,
             "pajak_persen":0,
             "jumlah_pajak":0,
             "jumlah":petugas[p].lama_perjalanan,
@@ -1446,6 +1480,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
               "keterangan_komponen":"Biaya Penginapan pada provinsi ini tidak ada segera hubungi bagian SBM",
               "kode_satuan":komponen[k].komponen1.kode_satuan,
               "biaya_satuan":0,
+              "satuan_sbm":0,
               "pajak_persen":0,
               "jumlah_pajak":0,
               "jumlah":petugas[p].lama_perjalanan,
@@ -1465,6 +1500,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
               "keterangan_komponen":komponen[k].komponen1.nama_komponen_perjadin,
               "kode_satuan":komponen[k].komponen1.kode_satuan,
               "biaya_satuan":biayau,
+              "satuan_sbm":biayau,
               "pajak_persen":0,
               "jumlah_pajak":0,
               "jumlah":petugas[p].lama_perjalanan,
@@ -1483,6 +1519,7 @@ exports.pilihSkemanew = async(req,res,next) =>{
             "keterangan_komponen":"data SBM Penginapan tidak bisa diakses",
             "kode_satuan":komponen[k].komponen1.kode_satuan,
             "biaya_satuan":0,
+            "satuan_sbm":0,
             "pajak_persen":0,
             "jumlah_pajak":0,
             "jumlah":petugas[p].lama_perjalanan,
@@ -1563,7 +1600,7 @@ exports.updatetransportnew = async(req,res,next)=>{
       let err = new Error('Data sbm transport tidak ada di database')
       throw err
     }
-    let biayat,kalijumlah 
+    let biayat,kalijumlah
 
     if(kode_transport === 'udara'){
       biayat = t.udara 
@@ -1574,8 +1611,10 @@ exports.updatetransportnew = async(req,res,next)=>{
     }
     if(kode_satuan === 'PP'){
       kalijumlah = 1
+      ketTaksi = 2
     }else if(kode_satuan === 'P'){
       kalijumlah = 0.5
+      ketTaksi = 1
     }else{
       let err = new Error('kode_satuan salah')
       throw err
@@ -1591,6 +1630,7 @@ exports.updatetransportnew = async(req,res,next)=>{
       "keterangan_komponen":`Transport (${kode_transport})`,
       "kode_satuan":kode_satuan,
       "biaya_satuan":biayat*kalijumlah,
+      "satuan_sbm":biayat*kalijumlah,
       "pajak_persen":0,
       "jumlah_pajak":0,
       "jumlah":1,
@@ -1608,6 +1648,12 @@ exports.updatetransportnew = async(req,res,next)=>{
         let err = new Error("Taksi asal tidak ada di database")
         throw err
       }
+      let ketTaksi
+      if(kode_satuan === 'PP'){
+        ketTaksi = 2
+      }else if(kode_satuan === 'P'){
+        ketTaksi = 1
+      }
       return{
         "id_surat_tugas":id_surat_tugas,
         "urut_tugas":1,
@@ -1618,10 +1664,11 @@ exports.updatetransportnew = async(req,res,next)=>{
         "keterangan_komponen":'Transport Lokal (Taksi) asal',
         "kode_satuan":'OK',
         "biaya_satuan":t.biaya,
+        "satuan_sbm":t.biaya,
         "pajak_persen":0,
         "jumlah_pajak":0,
-        "jumlah":1,
-        "total":t.biaya*1,
+        "jumlah":ketTaksi,
+        "total":t.biaya*ketTaksi,
         "tahun":tahun
       }
     }).catch((err)=>{throw err})
@@ -1642,10 +1689,11 @@ exports.updatetransportnew = async(req,res,next)=>{
         "keterangan_komponen":'Transpor Lokal (Taksi) tujuan',
         "kode_satuan":'OK',
         "biaya_satuan":t.biaya,
+        "satuan_sbm":t.biaya,
         "pajak_persen":0,
         "jumlah_pajak":0,
-        "jumlah":1,
-        "total":t.biaya*1,
+        "jumlah":ketTaksi,
+        "total":t.biaya*ketTaksi,
         "tahun":tahun
       }
     }).catch((err)=>{throw err})
@@ -1681,4 +1729,36 @@ exports.updatetransportnew = async(req,res,next)=>{
 }catch(err){
   return next(err)
 }
+}
+
+
+
+
+exports.editKomponen = (req,res,next) =>{
+  KomponenPerjadin_1.update(req.body,{where:{kode_trx:req.params.kode_trx}}).then((a)=>{
+    jsonFormat(res,"success","berhasil",a)
+  }).catch((err)=>{next(err)})
+}
+
+exports.listKomponen = (req,res,next) =>{
+  KomponenPerjadin.findAll({where:{kode_komponen_perjadin:{[Op.in]:["1","2.1","2.2"]}}}).then((reskom)=>{
+    jsonFormat(res,"success","berhasil menampilkan data",reskom)
+  }).catch((err)=>{
+    jsonFormat(res,"failed",err.message,err)
+  })
+}
+
+
+exports.tambahKomponen = (req,res,next) =>{
+  KomponenPerjadin_1.create(req.body).then((a)=>{
+    jsonFormat(res,"success","Berhasil Membuat data",a)
+  }).catch((err)=>{
+    jsonFormat(res,"failed",err.message,err)
+  })
+}
+
+exports.hapusKomponen = (req,res,next) =>{
+  KomponenPerjadin_1.destroy({where:{kode_trx:req.params.kode_trx}}).then((hapus)=>{
+    jsonFormat(res,"success","berhasil menghapus",hapus)
+  })
 }

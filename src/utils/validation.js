@@ -8,3 +8,12 @@ exports.process = (req,res,next)=>{
   }
   return next()
 }
+
+exports.processFile = (req,res,next) =>{
+  if (!req.file) {
+    return jsonFormat(res, "failed", "file yang diupload tidak sesuai format", []);
+  }
+  
+    next()
+  
+}

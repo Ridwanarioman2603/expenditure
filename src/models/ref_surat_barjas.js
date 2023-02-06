@@ -45,6 +45,10 @@ const SuratBarjas = db.define(
         type: DataTypes.CHAR(50),
         allowNull: true,
       },
+      nama_rup: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
       kode_rka: {
         type: DataTypes.INTEGER(11),
         allowNull: true,
@@ -110,7 +114,11 @@ const SuratBarjas = db.define(
         allowNull: true,
       },
       total: {
-        type: DataTypes.BIGINT(25),
+        type: DataTypes.DECIMAL(20,2),
+        allowNull: true,
+      },
+      total_kontrak: {
+        type: DataTypes.DECIMAL(20,2),
         allowNull: true,
       },
       status_pembayaran: {
@@ -129,11 +137,39 @@ const SuratBarjas = db.define(
         type: DataTypes.STRING(225),
         allowNull: true,
       },
+      path_spk: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
+      path_BAST: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
+      path_copy_NPWP: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
+      path_e_faktur: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
+      path_copy_halaman_depan_rekening: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
       kode_unit: {
         type: DataTypes.CHAR(25),
         allowNull: true,
       },
+      nama_unit: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
       kode_sub_unit: {
+        type: DataTypes.STRING(225),
+        allowNull: true,
+      },
+      nomor_spm: {
         type: DataTypes.STRING(225),
         allowNull: true,
       },
@@ -145,6 +181,11 @@ const SuratBarjas = db.define(
         type: DataTypes.INTEGER(4),
         allowNull: false,
         defaultValue:3
+      },
+      data_pengusulan: {
+        type: DataTypes.ENUM('TRANSAKSI-HISTORIS','TRANSAKSI-BARU'),
+        allowNull: false,
+        defaultValue:'TRANSAKSI-BARU'
       },
       ucr: {
         type: DataTypes.TEXT,

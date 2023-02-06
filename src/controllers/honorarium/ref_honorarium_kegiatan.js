@@ -127,8 +127,15 @@ const getHonorPanutan = async(req,res,next)=>{
         kode_surat = req.params.kode_surat
         nama_honor = req.params.nama_honor
         tahun = req.params.tahun
-        const data  = await SuratTugasHonor.findOne({where:{kode_surat:`${kode_surat}-honorarium`,tahun:tahun},
-        include:['honor_panitia','honor_pengisi','honor_penulis_soal']})
+        const data = await SuratTugasHonor.findOne({
+          where: { kode_surat: `${kode_surat}-honorarium`, tahun: tahun },
+          include: [
+            "honor_panitia",
+            "honor_pengisi",
+            "honor_penulis_soal",
+            "honor_petugas",
+          ],
+        });
         jsonFormat(res,"success","Berhasil menampilkan SK",data)
     }catch(err){
         next(err)
@@ -137,7 +144,7 @@ const getHonorPanutan = async(req,res,next)=>{
 
 const getKodeTrx = async(kode_surat,tahun) =>{
     let data = await SuratTugasHonor.findOne({attributes:['kode_trx'],where:{kode_surat:kode_surat,tahun:tahun}})
-    return data.kode_trx
+    return data?.kode_trx
 }
 
 // Store STORE
@@ -348,11 +355,44 @@ const InputRKA = async(req,res,next) =>{
         // }
         //   let lemparsiakun = await axios .post(`https://be1.ut.ac.id/siakun/apiv1/transaksi-pagu/store`,dataSiakun).then((response)=>{return response.data})
         //   .catch((err)=>{throw err})
+
+        // let dataSiakun = {
+        //     "tahun":req.body.tahun,
+        //     "kode_aplikasi":"08",
+        //     "kode_menu":"M08.01.04",
+        //     "kode_surat":req.body.kode_surat,
+        //     "kode_sub_surat":"-",
+        //     "tanggal_transaksi":req.body.tanggal,
+        //     "keterangan":`Surat Tugas Perjadin - Nomor surat:${req.body.nomor_surat_tugas}`,
+        //     "kode_rkatu":req.body.kode_rka,
+        //     "bulan_rkatu":req.body.kode_periode,
+        //     "nominal":req.body.jumlah_budget,
+        //     "ucr":req.body.ucr
+        // }
+        //   let lemparsiakun = await axios .post(`${hostSiakunBe1}${idAPI.siakun.pagu_store}`,dataSiakun).catch(()=>0)
+
         jsonFormat(res,'success','berhasil menginputkan rka', response)
     }catch(err){
         next(err)
     }
 }
+
+const getlistByheaderPanutan = async (req, res, next) => {
+  try {
+    let id_sub_unit = req.params.id_sub_unit.split("-", 20);
+    let nama_honor = req.params.nama_honor.split("-", 20);
+    const honor = await SuratTugasHonor.findAll({
+      where: {
+        id_sub_unit: { [Op.in]: [id_sub_unit] },
+        nama_honor: { [Op.in]: [nama_honor] },
+      },
+    });
+    return jsonFormat(res, "success", "Berhasil Menampilkan Data", honor);
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
+};
 
 const UpdateSKStatus = async(req,res,next) =>{
     try{
@@ -368,21 +408,22 @@ let updateStatusSK = async(data,status)=>{
     return response
   }
 
-module.exports={
-    BelumDiproses,
-    getHonor,
-    getHonorById,
-    storeHonor,
-    storePetugas,
-    ShowPetugas,
-    getHonorByheader,
-    storeHonorPanutan,
-    storeHonorPanitiaPanutan,
-    getHonorPanutan,
-    storeHonorPengisiPanutan,
-    storeHonorPenulisSoal,
-    getKodeTrx,
-    editSK,
-    InputRKA,
-    UpdateSKStatus
-}
+module.exports = {
+  BelumDiproses,
+  getHonor,
+  getHonorById,
+  storeHonor,
+  storePetugas,
+  ShowPetugas,
+  getHonorByheader,
+  storeHonorPanutan,
+  storeHonorPanitiaPanutan,
+  getHonorPanutan,
+  storeHonorPengisiPanutan,
+  storeHonorPenulisSoal,
+  getKodeTrx,
+  editSK,
+  InputRKA,
+  UpdateSKStatus,
+  getlistByheaderPanutan,
+};

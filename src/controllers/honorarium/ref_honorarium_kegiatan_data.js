@@ -1,4 +1,3 @@
-const FormData = require('form-data');
 const { stat } = require('fs/promises');
 const { QueryTypes,Op } = require("sequelize");
 //ref DATA
@@ -19,6 +18,7 @@ const dataHonor = (data) =>{
       penandatangan:data?.penandatangan,
       path_sk:data?.path_sk,
       kode_status:data?.kode_status,
+      data_pengusulan:data?.data_pengusulan,
       jenis_honor:data?.jenis_honor,
       nama_honor:data?.nama_honor,
       ucr:data?.ucr
@@ -39,6 +39,7 @@ const dataHonor = (data) =>{
       kode_status:0,
       jenis_honor:data?.jenis_honor,
       nama_honor:data?.nama_honor,
+      data_pengusulan:data?.data_pengusulan,
       ucr:data?.ucr
   }
 }
@@ -327,6 +328,7 @@ const dataupdateRKA = async(data) =>{
 }
 
 const dataPetugasHonorarium = async(body,data,sbm,pajak,trx_surat) =>{
+  let satuan_biaya = sbm.satuan_biaya
   let jumlah_biaya = sbm.satuan_biaya * data.volume_1 * data.volume_2
   let biaya_pajak = jumlah_biaya * (pajak.besaran_pajak/100)
   let jumlah_diterima = jumlah_biaya - biaya_pajak 
@@ -351,6 +353,7 @@ const dataPetugasHonorarium = async(body,data,sbm,pajak,trx_surat) =>{
     volume_1:data.volume_1,
     satuan_2:data.satuan_2,
     volume_2:data.volume_2,
+    satuan_biaya:satuan_biaya,
     jumlah_biaya:jumlah_biaya,
     pajak:biaya_pajak,
     jumlah_diterima:jumlah_diterima,
@@ -394,6 +397,20 @@ return {
 }
 }
 
+const data_update_nominal_petugas = (pajak,satuan_biaya,honor) =>{
+  let persenPajak = pajak.besaran_pajak/100
+  let jumlah_biaya = satuan_biaya*honor.volume_1*honor.volume_2
+  let biayapajak = jumlah_biaya*persenPajak
+  let jumlah_diterima  = jumlah_biaya - biayapajak
+  return {
+    satuan_biaya:satuan_biaya,
+    jumlah_biaya:jumlah_biaya,
+    pajak:biayapajak,
+    jumlah_diterima:jumlah_diterima
+  }
+
+}
+
   module.exports={
     dataHonor,
     dataPetugasHonor,
@@ -413,5 +430,6 @@ return {
     dataupdateRKA,
     dataHonorTutor,
     dataPetugasHonorarium,
-    data_siakun
+    data_siakun,
+    data_update_nominal_petugas
 }

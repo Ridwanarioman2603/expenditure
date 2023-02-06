@@ -17,7 +17,6 @@ const { type } = require("express/lib/response");
 const fs = require('fs');
 const puppeteer  = require("puppeteer");
 const path = require("path");
-const FormData = require('form-data');
 const hostPevita = process.env.hostPevita 
 const hostProdevPanutan = process.env.hostProdevPanutan
 

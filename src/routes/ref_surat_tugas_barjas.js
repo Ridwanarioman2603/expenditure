@@ -11,28 +11,30 @@ const barjasSchema = require("../request/ref_surat_barjas")
 const { validationResult } = require("express-validator");
 const { jsonFormat } = require("../utils/jsonFormat");
 const validate = require("../utils/validation");
+const {authenticate} = require("../middleware/auth");
 
-router.get("/allpanutan", allpanutanBarjas);
-router.get("/nested-all", nestedAll);
-router.get("/nested-detail/:id_permintaan/:id_kontrak", detailBarjas);
-router.get("/allpanutannested", nestedlistfrompanutan);
-router.get("/detailbarjaspanutan/:id_permintaan",detailbarjaspanutan);
-router.get("/nestedfrompanutan/:id_permintaan",nestedfrompanutan);
-router.get("/detailpermintaanpanutan/:id_level/:id_permintaan",getdetailpembayaran);
-router.get("/allexpenditure", allexpenditure);
-router.get("/nested-expenditure/:kode_permintaan/:kode_kontrak", nestedexpenditure);
-router.get("/sibela-exclude-expenditure/:tahun", panutanexcludeexpenditure);
-router.get("/list-spm", listSPM);
-router.post("/get-nomor-spm",barjasSchema.getNomor,validate.process, transferdata);
-router.post("/render-spm", renderkrirmspm);
+router.get("/allpanutan",authenticate, allpanutanBarjas);
+router.get("/nested-all",authenticate, nestedAll);
+router.get("/nested-detail/:id_permintaan/:id_kontrak",authenticate, detailBarjas);
+router.get("/nested-detail-noauth/:id_permintaan/:id_kontrak", detailBarjas);
+router.get("/allpanutannested",authenticate, nestedlistfrompanutan);
+router.get("/detailbarjaspanutan/:id_permintaan",authenticate,detailbarjaspanutan);
+router.get("/nestedfrompanutan/:id_permintaan",authenticate,nestedfrompanutan);
+router.get("/detailpermintaanpanutan/:id_level/:id_permintaan",authenticate,getdetailpembayaran);
+router.get("/allexpenditure",authenticate, allexpenditure);
+router.get("/nested-expenditure/:kode_permintaan/:kode_kontrak",authenticate, nestedexpenditure);
+router.get("/sibela-exclude-expenditure/:tahun",authenticate, panutanexcludeexpenditure);
+router.get("/list-spm",authenticate, listSPM);
+router.post("/get-nomor-spm",authenticate,barjasSchema.getNomor,validate.process, transferdata);
+router.post("/render-spm",authenticate, renderkrirmspm);
 router.post("/store",barjasSchema.store,validate.process, store);
 
-  router.post("/store-one",barjasSchema.storeOne,validate.process, storeOne);
+router.post("/store-one",barjasSchema.storeOne,validate.process, storeOne);
 
-  router.post("/get-nomor-spm-new",barjasSchema.getNomorSPM,validate.process, getNomorSpm);
+router.post("/get-nomor-spm-new",authenticate,barjasSchema.getNomorSPM,validate.process, getNomorSpm);
 
-router.put("/update-status",barjasSchema.UpdateStatus,validate.process, UpdateStatusBarjas);
+router.put("/update-status",authenticate,barjasSchema.UpdateStatus,validate.process, UpdateStatusBarjas);
 
-  router.get("/nested-barjas/:kode_permintaan/:kode_kontrak/:tahun", NestedBarjas);
+router.get("/nested-barjas/:kode_permintaan/:kode_kontrak/:tahun",authenticate, NestedBarjas);
 
 module.exports = router;
