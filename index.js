@@ -109,7 +109,9 @@ const {authenticate} = require("./src/middleware/auth");
 const sppdRoutes = require("./src/routes/trx_sppd")
 const studilanjutRoutes = require("./src/routes/studi_lanjut/ref_sbm_studi_lanjut")
 const trxstudilanjutRoutes = require("./src/routes/studi_lanjut/trx_pegawai_studi_lanjut")
+const trxbeasiswaRoutes = require("./src/routes/studi_lanjut/trx_beasiswa")
 //const path = require("path");
+const danaawalupRoutes = require("./src/routes/UP/ref_dana_awal_up")
 
 //REFRENSI
 app.use("/expen/ref-pajak-honorarium",authenticate, refPajakHonorarium);
@@ -180,6 +182,9 @@ app.use("/expen/perjadin-menu-unit-tujuan",authenticate,menuUnitTujuanRoute)
 app.use("/expen/sppd",sppdRoutes)
 app.use("/expen/studi-lanjut",studilanjutRoutes)
 app.use("/expen/trx-studi-lanjut",trxstudilanjutRoutes)
+app.use("/expen/dana-awal", danaawalupRoutes)
+app.use("/expen/trx-beasiswa", trxbeasiswaRoutes)
+
 // ERROR HANDLER
 app.use(errorHandler);
 

@@ -24,3 +24,6 @@ const generateKode1 = (kode) => {
           return kode_hasil
 }
 
+module.exports = {
+  generateKode1
+}
