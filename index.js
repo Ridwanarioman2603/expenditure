@@ -106,7 +106,9 @@ const AuthRoutes = require("./src/routes/auth");
 const TTE = require("./src/routes/panutan/tte_external_panutan");
 const klasifikasiHonor = require("./src/routes/panutan/klasifikasi_honor");
 const {authenticate} = require("./src/middleware/auth");
-
+const sppdRoutes = require("./src/routes/trx_sppd")
+const studilanjutRoutes = require("./src/routes/studi_lanjut/ref_sbm_studi_lanjut")
+const trxstudilanjutRoutes = require("./src/routes/studi_lanjut/trx_pegawai_studi_lanjut")
 //const path = require("path");
 
 //REFRENSI
@@ -175,7 +177,9 @@ app.use("/expen/tte",TTE)
 app.use("/expen/ref-sbm-honorarium-all",refSbmHonorariumAll)
 app.use("/expen/panutan/get-klasifikasi-honor/",authenticate,klasifikasiHonor)
 app.use("/expen/perjadin-menu-unit-tujuan",authenticate,menuUnitTujuanRoute)
-
+app.use("/expen/sppd",sppdRoutes)
+app.use("/expen/studi-lanjut",studilanjutRoutes)
+app.use("/expen/trx-studi-lanjut",trxstudilanjutRoutes)
 // ERROR HANDLER
 app.use(errorHandler);
 

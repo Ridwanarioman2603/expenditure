@@ -67,7 +67,10 @@ const trxSPPD = db.define(
     // updatedAt: "udch",
   }
 );
-
+PetugasPerjadinBiaya.hasMany(trxSPPD, {
+  foreignKey : "kode_surat_tugas", 
+  as : "sppd"
+})
 //trxSPPD.belongsTo(SuratTugasPerjadin,{ targetKey:"id_surat_tugas" ,foreignKey:"kode_surat_tugas", as:"surat"});
 trxSPPD.belongsTo(PetugasPerjadinBiaya,{ targetKey:"id_surat_tugas" ,foreignKey:"kode_surat_tugas", as:"surat"});
 //SuratTugasPerjadin.belongsTo(trxSPPD,{ foreignKey:"id_surat_tugas", as:"hsurat"});
