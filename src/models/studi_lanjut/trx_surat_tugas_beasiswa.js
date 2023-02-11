@@ -85,11 +85,13 @@ const TrxSuratTugasBeasiswa = db.define(
 
 TrxSuratTugasBeasiswa.hasMany(dokumenKirimPanutan,{
     foreignKey : 'id_surat_tugas',
+    sourceKey : 'kode_surat',
     as : 'DokumenPanutan'
 })
 
 dokumenKirimPanutan.belongsTo(TrxSuratTugasBeasiswa, {
     foreignKey : 'kode_surat', 
+    // targetKey : 'kode_surat',
     as : 'TrxSuratTugas'
 })
 
