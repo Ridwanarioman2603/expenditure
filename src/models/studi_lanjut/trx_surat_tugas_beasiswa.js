@@ -83,6 +83,14 @@ const TrxSuratTugasBeasiswa = db.define(
     }
 )
 
+TrxSuratTugasBeasiswa.hasMany(dokumenKirimPanutan,{
+    foreignKey : 'id_surat_tugas',
+    as : 'DokumenPanutan'
+})
 
+dokumenKirimPanutan.belongsTo(TrxSuratTugasBeasiswa, {
+    foreignKey : 'kode_surat', 
+    as : 'TrxSuratTugas'
+})
 
 module.exports = TrxSuratTugasBeasiswa

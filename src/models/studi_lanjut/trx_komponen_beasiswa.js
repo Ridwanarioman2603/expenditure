@@ -108,23 +108,15 @@ const TrxKomponenBeasiswa = db.define(
 )
 
 TrxSuratTugasBeasiswa.hasMany(TrxKomponenBeasiswa, {
-    foreignKey : 'kode_trx_surat_tugas', 
+    foreignKey : 'kode_trx', 
     as : 'TrxKomponenBeasiswa'
 })
 
 TrxKomponenBeasiswa.belongsTo(TrxSuratTugasBeasiswa, {
-    foreignKey : 'kode_trx_surat_tugas',
+    foreignKey : 'kode_trx',
     as : 'TrxSuratTugasBeasiswa'
 })
 
-RefStudiLanjut.hasMany(TrxKomponenBeasiswa, {
-    foreignKey : 'kode_ref_studi_lanjut', 
-    as : 'TrxKomponenBeasiswa'
-})
 
-TrxKomponenBeasiswa.belongsTo(RefStudiLanjut, {
-    foreignKey : 'kode_ref_studi_lanjut',
-    as : 'RefStudiLanjut'
-})
 
 module.exports = TrxKomponenBeasiswa;

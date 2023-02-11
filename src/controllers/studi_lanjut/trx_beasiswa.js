@@ -1,6 +1,7 @@
 const TrxSuratTugasBeasiswa = require("../../models/studi_lanjut/trx_surat_tugas_beasiswa")
 const TrxKomponenBeasiswa = require("../../models/studi_lanjut/trx_komponen_beasiswa")
 const hostExpenditure = process.env.hostExpenditure;
+const dokumenKirimPanutan = require("../../models/trx_dokumen_kirim_ke_panutan");
 const pevita = require("../../utils/pevita")
 const render = require("../../utils/renderpdf")
 const db = require("../../config/database");
@@ -113,6 +114,95 @@ exports.renderbeasiswa = (req, res, next) => {
             throw error
         }
         return jsonFormat(res, "success", "Data Berhasil Render")
+    })
+    .catch((err) => {
+        if(!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err)
+    });
+}
+
+exports.showByNoSurat = (req, res, next) => {
+    let param = {
+        kode_surat : req.params.id
+    }
+    return TrxSuratTugasBeasiswa.findAll({
+        where : param,
+        include : [
+            {
+                model : dokumenKirimPanutan,
+                as : 'DokumenPanutan',
+                attributes : ['id_surat_tugas','nomor']
+            },
+            {
+                model : TrxKomponenBeasiswa, 
+                as : 'TrxKomponenBeasiswa',
+                attributes : {
+                    exclude : ['udcr','udch','ucr','uch']
+                }
+            }
+        ]
+    })
+    .then((app) => {
+        if(app.length === 0) {
+            const error = new Error("Data Tidak Ada")
+            error.statusCode = 422
+            throw error
+        }
+        return jsonFormat(res, 'success', 'Data Berhasil Ditampilkan', app)
+    })
+    .catch((err) => {
+        if(!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err)
+    });
+}
+
+exports.updatekomponen = (req, res, next) => {
+    const param = {
+        kode_trx_komponen_beasiswa : req.params.id
+    }
+    const body = {
+        nip                 : req.body.nip,
+        nama_pegawai        : req.body.nama_pegawai,
+        keterangan          : req.body.keterangan,
+        golongan            : req.body.golongan,
+        biaya_pendaftaran   : req.body.biaya_pendaftaran,
+        biaya_spp           : req.body.biaya_spp,
+        dana_hidup          : req.body.dana_hidup,
+        tunjangan_buku      : req.body.tunjangan_buku,
+        tunjangan_keluarga  : req.body.tunjangan_keluarga,
+        dana_transportasi   : req.body.dana_transportasi,
+        dana_kedatangan     : req.body.dana_kedatangan,
+        dana_keadaan_darurat: req.body.dana_keadaan_darurat,
+        bantuan_penelitian  : req.body.bantuan_penelitian,
+        bantuan_seminar     : req.body.bantuan_seminar,
+        bantuan_publikasi   : req.body.bantuan_publikasi,
+        pph                 : req.body.pph,
+        jumlah_diterima     : req.body.jumlah_diterima
+    }
+    return TrxKomponenBeasiswa.findOne({
+        where : param
+    })
+    .then((app) => {
+        if(!app) {
+            const error = new Error("Data Tidak Ada")
+            error.statusCode = 422
+            throw error
+        }
+        return TrxKomponenBeasiswa.update(body, {
+            where : param
+        });
+    })
+    .then((appUpd) => {
+        if(!appUpd) {
+            const error = new Error("Data Tidak Ada")
+            error.statusCode = 422
+            throw error
+        }
+        return jsonFormat(res, 'success', 'Data Berhasil Diupdate', body)
     })
     .catch((err) => {
         if(!err.statusCode) {

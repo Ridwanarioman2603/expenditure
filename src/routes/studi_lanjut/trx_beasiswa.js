@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-    store, renderbeasiswa, 
+    store, renderbeasiswa, showByNoSurat, updatekomponen
 } = require("../../controllers/studi_lanjut/trx_beasiswa");
 // const transferexpenditureSchame = require("../request/trx_transfer_expenditure");
 // const { validationResult } = require("express-validator");
@@ -11,5 +11,9 @@ const {
 router.post("/", store)
 
 router.post("/render", renderbeasiswa)
+
+router.get('/showbynosurat/:id', showByNoSurat )
+
+router.put('/update-komponen/:id', updatekomponen)
 
 module.exports = router;
